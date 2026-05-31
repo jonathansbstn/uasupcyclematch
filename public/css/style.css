@@ -1,0 +1,251 @@
+/* ==========================================================================
+   1. RESET & FONTS SETUP
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght=400;600;700;800&family=DM+Sans:wght=400;500;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F7F4D5; /* Warna Kuning Gading khas UpcycleMatch */
+    color: #0A3323;
+}
+
+/* ==========================================================================
+   2. GLOBAL AUTH PAGES LAYER (Login & Register - Versi Compact)
+   ========================================================================== */
+.auth-page {
+    display: flex;
+    height: calc(100vh - 75px); 
+    background: #F7F4D5;
+    overflow: hidden;
+}
+
+.auth-left {
+    flex: 1.2; 
+    background: #0A3323;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 40px 60px;
+    color: #F7F4D5;
+}
+
+@media (max-width: 992px) {
+    .auth-left { display: none; }
+}
+
+.deco-ring {
+    position: absolute;
+    border: 2px dashed rgba(131, 153, 88, 0.25);
+    border-radius: 50%;
+    animation: rotateRing 20s linear infinite;
+}
+@keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.auth-left-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 480px;
+}
+
+.auth-big-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px; 
+    font-weight: 800;
+    line-height: 1.15;
+    color: #F7F4D5;
+    margin-bottom: 12px;
+}
+
+.auth-big-sub {
+    font-size: 15px;
+    color: #9FE1CB;
+    margin-bottom: 30px;
+    line-height: 1.4;
+}
+
+.auth-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ab-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13.5px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(159, 225, 203, 0.1);
+    color: #F7F4D5;
+}
+
+.ab-dot {
+    width: 8px;
+    height: 8px;
+    background: #839958;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #839958;
+}
+
+.auth-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-card {
+    background: #ffffff;
+    border: 2px solid #0A3323;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 410px; 
+    padding: 24px 30px; 
+    box-shadow: 0px 6px 0px #0A3323;
+    box-sizing: border-box;
+}
+
+.auth-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0A3323;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 14px;
+}
+.auth-logo span { color: #839958; }
+
+.auth-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0A3323;
+    margin-bottom: 4px;
+}
+
+.auth-sub {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 18px;
+}
+
+/* ==========================================================================
+   3. COMPONENTS (Form, Input, Buttons)
+   ========================================================================== */
+.form-group { margin-bottom: 14px; }
+.form-label {
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0A3323;
+    margin-bottom: 6px;
+}
+.form-input {
+    width: 100%;
+    padding: 11px 14px; 
+    border: 1.5px solid #C0DD97;
+    border-radius: 10px;
+    font-size: 13.5px;
+    background: #FBFDF8;
+    color: #0A3323;
+    outline: none;
+}
+.btn-submit {
+    width: 100%;
+    background: #0A3323;
+    color: #F7F4D5;
+    border: none;
+    padding: 12px;
+    border-radius: 100px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.btn-submit:hover { background: #134d36; }
+.auth-footer { text-align: center; margin-top: 16px; font-size: 12px; color: #666; }
+.auth-footer a { color: #0A3323; font-weight: 700; text-decoration: none; }
+
+.register-compact { max-width: 460px !important; padding: 20px 24px !important; }
+.form-row { display: flex; gap: 10px; }
+.form-row .form-group { flex: 1; }
+.role-grid { display: flex; gap: 8px; margin-bottom: 12px; }
+.role-btn {
+    flex: 1; background: #FBFDF8; border: 1.5px solid #C0DD97; border-radius: 8px;
+    padding: 8px; font-size: 12.5px; font-weight: 700; text-align: center; cursor: pointer; color: #0A3323;
+}
+.role-btn.active { background: #E8F5D6; border-color: #0A3323; box-shadow: 0 3px 0px #0A3323; }
+
+/* ==========================================================================
+   5. REAL DASHBOARD STYLING LAYER (Pondasi Hijau UpcycleMatch)
+   ========================================================================== */
+.dash-body { background: #F7F4D5; margin: 0; }
+.dash-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #0A3323; padding: 14px 40px; color: #F7F4D5; border-bottom: 3px solid #839958;
+}
+.nav-logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #F7F4D5; text-decoration: none; }
+.nav-logo span { color: #839958; }
+.dash-tabs { display: flex; gap: 10px; }
+.dtab {
+    color: #9FE1CB; text-decoration: none; padding: 8px 16px; font-size: 14px; font-weight: 500; border-radius: 8px;
+}
+.dtab.a, .dtab:hover { background: rgba(255,255,255,0.08); color: #F7F4D5; font-weight: 700; }
+.dash-nav-right { display: flex; align-items: center; gap: 14px; }
+.nav-avatar {
+    width: 38px; height: 38px; background: #839958; color: #0A3323; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer; border: 2px solid #F7F4D5;
+}
+.dash-layout { display: flex; padding: 30px 40px; gap: 30px; min-height: calc(100vh - 70px); }
+.dash-main { flex: 1; display: flex; flex-direction: column; gap: 24px; }
+
+/* Dashboard Content Elements */
+.dash-hero-band {
+    background: #0A3323; color: #F7F4D5; padding: 24px 30px; border-radius: 16px;
+    display: flex; justify-content: space-between; align-items: center; border: 2px solid #839958;
+}
+.dash-greet { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+.dash-greet-sub { font-size: 14px; color: #9FE1CB; margin-top: 4px; }
+.btn-primary {
+    background: #839958; color: #0A3323; padding: 12px 24px; border-radius: 30px;
+    text-decoration: none; font-weight: 700; font-size: 14px; border: 2px solid #0A3323; box-shadow: 0 4px 0 #0A3323;
+}
+.btn-primary:hover { background: #96af65; }
+
+/* KPI Grid */
+.kpi4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.kpi { background: white; padding: 20px; border-radius: 14px; border: 2px solid #0A3323; box-shadow: 4px 4px 0 #0A3323; }
+.kpi-lbl { font-size: 12px; font-weight: 700; color: #666; text-transform: uppercase; }
+.kpi-num { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-top: 6px; }
+
+/* Main Dashboard Grid Split */
+.dash-grid2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; width: 100%; }
+.card { background: white; border: 2px solid #0A3323; border-radius: 16px; padding: 24px; box-shadow: 5px 5px 0 #0A3323; }
+.card-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed #eee; padding-bottom: 12px; }
+.ct { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; }
+.clink { font-size: 13px; color: #839958; text-decoration: none; font-weight: 700; }
+
+/* Empty State & Items */
+.empty-state { text-align: center; padding: 40px 20px; color: #666; }
+.empty-state p { margin: 12px 0 16px; font-size: 14px; }
+.gi-block { background: #839958; color: #0A3323; padding: 20px; border-radius: 14px; border: 2px solid #0A3323; box-shadow: 4px 4px 0 #0A3323; }
+.gi-title { font-family: 'Syne', sans-serif; font-weight: 800; margin-bottom: 12px; }
+.gi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; text-align: center; }
+.gi-cell { background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; }
+.gi-num { font-weight: 800; font-size: 18px; }
+.gi-lbl { font-size: 11px; }
+.gi-badge { background: #0A3323; color: #F7F4D5; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 700; margin-top: 12px; }
+.tip-item { font-size: 13px; margin-bottom: 10px; line-height: 1.4; border-left: 3px solid #839958; padding-left: 10px; }
