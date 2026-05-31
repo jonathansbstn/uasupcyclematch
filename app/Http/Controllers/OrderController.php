@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    /** Halaman checkout — tampilkan detail produk + form */
+    /** Halaman checkout */
     public function checkout(Product $product)
     {
         if ($product->status !== 'published') {
-            abort(404, 'Produk tidak tersedia.');
+            return redirect()->route('contributor.dashboard')
+                ->with('error', 'Produk tidak tersedia atau sudah tidak dijual.');
         }
         $product->load(['upcycler', 'textile']);
         $user = auth()->user();
@@ -25,7 +26,7 @@ class OrderController extends Controller
     public function store(Request $request, Product $product)
     {
         if ($product->status !== 'published') {
-            return back()->withErrors(['error' => 'Produk tidak tersedia.']);
+            return back()->with('error', 'Produk tidak tersedia.');
         }
 
         $data = $request->validate([
@@ -39,34 +40,32 @@ class OrderController extends Controller
 
         $user  = auth()->user();
         $price = $product->price;
+        $koinNeeded = ceil($price / 2500);
 
-        // Jika bayar pakai koin, pastikan saldo cukup
-        if ($data['payment_method'] === 'koin') {
-            $koinNeeded = ceil($price / 2500); // 1 koin = Rp2.500
-            if ($user->koin < $koinNeeded) {
-                return back()->withErrors(['error' => "Koin tidak cukup. Butuh {$koinNeeded} koin, kamu punya {$user->koin} koin."]);
-            }
+        if ($data['payment_method'] === 'koin' && $user->koin < $koinNeeded) {
+            return back()->withErrors(['error' => "Koin tidak cukup. Butuh {$koinNeeded} koin, kamu punya {$user->koin} koin."])->withInput();
         }
 
-        DB::transaction(function () use ($data, $product, $user, $price) {
+        $order = DB::transaction(function () use ($data, $product, $user, $price, $koinNeeded) {
+            $isPaidByKoin = $data['payment_method'] === 'koin';
+
             $order = Order::create([
-                'buyer_id'       => $user->id,
-                'product_id'     => $product->id,
-                'quantity'       => 1,
-                'total_price'    => $price,
-                'recipient_name' => $data['recipient_name'],
-                'recipient_phone'=> $data['recipient_phone'],
-                'address'        => $data['address'],
-                'city'           => $data['city'],
-                'payment_method' => $data['payment_method'],
-                'notes'          => $data['notes'] ?? null,
-                'status'         => $data['payment_method'] === 'koin' ? 'paid' : 'pending',
-                'paid_at'        => $data['payment_method'] === 'koin' ? now() : null,
+                'buyer_id'        => $user->id,
+                'product_id'      => $product->id,
+                'quantity'        => 1,
+                'total_price'     => $price,
+                'recipient_name'  => $data['recipient_name'],
+                'recipient_phone' => $data['recipient_phone'],
+                'address'         => $data['address'],
+                'city'            => $data['city'],
+                'payment_method'  => $data['payment_method'],
+                'notes'           => $data['notes'] ?? null,
+                'status'          => $isPaidByKoin ? 'paid' : 'pending',
+                'paid_at'         => $isPaidByKoin ? now() : null,
             ]);
 
-            // Potong koin jika bayar pakai koin
-            if ($data['payment_method'] === 'koin') {
-                $koinNeeded = ceil($price / 2500);
+            if ($isPaidByKoin) {
+                // Potong koin dari pembeli
                 $user->decrement('koin', $koinNeeded);
                 KoinTransaction::create([
                     'user_id'    => $user->id,
@@ -74,17 +73,23 @@ class OrderController extends Controller
                     'type'       => 'purchase',
                     'keterangan' => 'Beli produk: ' . $product->display_name,
                 ]);
+
+                // Tambah saldo pendapatan ke Upcycler
+                $upcycler = $product->upcycler;
+                if ($upcycler) {
+                    $upcycler->increment('saldo', $price);
+                }
             }
+
+            return $order;
         });
 
         return redirect()->route('contributor.orders')
-            ->with('success', 'Pesanan berhasil dibuat! ' .
-                ($data['payment_method'] === 'koin'
-                    ? 'Pembayaran koin berhasil diproses.'
-                    : 'Silakan transfer ke rekening penjual.'));
+            ->with('success', 'Pesanan #ORD-' . str_pad($order->id, 4, '0', STR_PAD_LEFT) . ' berhasil dibuat!')
+            ->with('new_order_id', $order->id);
     }
 
-    /** Daftar pesanan milik contributor yang login */
+    /** Daftar pesanan milik contributor */
     public function myOrders()
     {
         $orders = Order::where('buyer_id', auth()->id())

@@ -445,9 +445,63 @@
           </div>
         </div>
       </div>
-
       <!-- ===== SECTION: GALLERY (BELI PRODUK) ===== -->
       <div class="page-sec" id="sec-gallery">
+      
+        <!-- ===== WIDGET: PESANAN TERKINI ===== -->
+        <div id="widget-orders" style="margin-bottom:32px;">
+          <div class="sec-hdr" style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <div>
+              <div class="sec-title">Pesanan Terkini</div>
+              <div class="sec-sub">Status barang yang Anda beli dari Upcycler</div>
+            </div>
+            <a href="{{ route('contributor.orders') }}" style="font-size:12px;color:var(--moss);font-weight:700;text-decoration:none;">Lihat Semua <i class="ti ti-arrow-right"></i></a>
+          </div>
+          
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            @forelse($recentOrders as $order)
+            @php
+                $statusLabel = [
+                    'pending'    => '⏳ Menunggu Pembayaran',
+                    'paid'       => '✅ Lunas — Menunggu Dikirim',
+                    'processing' => '⚙️ Sedang Diproses',
+                    'shipped'    => '🚚 Sedang Dikirim',
+                    'done'       => '🎉 Pesanan Selesai',
+                    'cancelled'  => '❌ Dibatalkan',
+                ][$order->status] ?? $order->status;
+                
+                $statusColor = [
+                    'pending'    => 'color:#a16207;background:#fef9c3;',
+                    'paid'       => 'color:#166534;background:#dcfce7;',
+                    'processing' => 'color:#1d4ed8;background:#dbeafe;',
+                    'shipped'    => 'color:#0f766e;background:#ccfbf1;',
+                    'done'       => 'color:#166534;background:#f0fdf4;',
+                    'cancelled'  => 'color:#991b1b;background:#fee2e2;',
+                ][$order->status] ?? 'color:#666;background:#f3f4f6;';
+            @endphp
+            <div class="card" style="padding:14px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 0 var(--beige2);">
+              @if($order->product?->photo)
+                <img src="{{ asset('storage/'.$order->product->photo) }}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0;" />
+              @else
+                <div style="width:60px;height:60px;background:var(--beige2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🎨</div>
+              @endif
+              <div style="flex:1;">
+                <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--dk);margin-bottom:2px;">{{ $order->product?->display_name ?? 'Produk' }}</div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">#ORD-{{ str_pad($order->id,4,'0',STR_PAD_LEFT) }} · Rp{{ number_format($order->total_price,0,',','.') }}</div>
+                <span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:100px;{{ $statusColor }}">{{ $statusLabel }}</span>
+              </div>
+              @if($order->status === 'pending' && $order->payment_method === 'transfer')
+              <a href="{{ route('contributor.orders') }}" class="btn-primary" style="font-size:11px;padding:6px 12px;text-decoration:none;">Bayar</a>
+              @endif
+            </div>
+            @empty
+            <div class="card" style="text-align:center;padding:24px;color:var(--muted);font-size:13px;border:1.5px dashed var(--beige2);box-shadow:none;">
+              Belum ada pesanan aktif. Beli produk daur ulang di bawah!
+            </div>
+            @endforelse
+          </div>
+        </div>
+
         <div class="sec-hdr">
           <div class="sec-title">Beli Produk Daur Ulang</div>
           <div class="sec-sub">Produk kreatif dari limbah kain hasil karya mitra penjahit UpcycleMatch</div>

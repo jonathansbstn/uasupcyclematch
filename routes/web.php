@@ -17,6 +17,7 @@ use App\Http\Controllers\AdminAnalyticsController;
 use App\Http\Controllers\AdminVerificationController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UpcyclerOrderController;
 use Laravel\Socialite\Facades\Socialite;
 
 /*
@@ -139,6 +140,11 @@ Route::middleware(['auth', 'role:upcycler'])->prefix('upcycler')->group(function
         $daftarLimbah = Textile::where('status', 'available')->latest()->get();
         return view('upcycler.materials', compact('daftarLimbah'));
     })->name('upcycler.materials');
+
+    // Pesanan Masuk — urutan penting: /orders/withdraw harus sebelum {order}
+    Route::get('/orders', [UpcyclerOrderController::class, 'index'])->name('upcycler.orders');
+    Route::get('/orders/withdraw', [UpcyclerOrderController::class, 'requestWithdraw'])->name('upcycler.orders.withdraw');
+    Route::patch('/orders/{order}/status', [UpcyclerOrderController::class, 'updateStatus'])->name('upcycler.orders.status');
 
     // Dummy routes untuk backward compat
     Route::get('/peta', function () { return redirect()->route('upcycler.exploration-map'); })->name('peta.index');

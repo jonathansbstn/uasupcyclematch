@@ -23,6 +23,11 @@
                 <a href="{{ route('upcycler.dashboard') }}" class="dtab {{ request()->routeIs('upcycler.dashboard') ? 'a' : '' }}">Beranda</a>
                 <a href="{{ route('upcycler.exploration-map') }}" class="dtab {{ request()->routeIs('upcycler.exploration-map') ? 'a' : '' }}">🗺 Peta Limbah</a>
                 <a href="{{ route('upcycler.production') }}" class="dtab {{ request()->routeIs('upcycler.production') ? 'a' : '' }}">⚙️ Produksi</a>
+                <a href="{{ route('upcycler.orders') }}" class="dtab {{ request()->routeIs('upcycler.orders') ? 'a' : '' }}" style="position:relative;">
+                    🛒 Pesanan
+                    @php $pendingOrders = \App\Models\Order::whereHas('product', fn($q) => $q->where('upcycler_id', auth()->id()))->where('status','pending')->count(); @endphp
+                    @if($pendingOrders > 0)<span style="position:absolute;top:-4px;right:-6px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:100px;padding:1px 5px;">{{ $pendingOrders }}</span>@endif
+                </a>
                 <a href="{{ route('gallery') }}" class="dtab">🎨 Galeri</a>
             </div>
         @else
@@ -30,6 +35,7 @@
             <div class="dash-tabs">
                 <a href="{{ route('contributor.dashboard') }}" class="dtab {{ request()->routeIs('contributor.dashboard') ? 'a' : '' }}">Beranda</a>
                 <a href="{{ route('contributor.upload') }}" class="dtab {{ request()->routeIs('contributor.upload') ? 'a' : '' }}">+ Post Limbah</a>
+                <a href="{{ route('contributor.orders') }}" class="dtab {{ request()->routeIs('contributor.orders') ? 'a' : '' }}">📦 Pesanan Saya</a>
                 <a href="{{ route('gallery') }}" class="dtab">🎨 Galeri</a>
             </div>
         @endif

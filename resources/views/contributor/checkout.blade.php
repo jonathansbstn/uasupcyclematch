@@ -1,106 +1,269 @@
 @extends('layouts.dashboard')
-@section('title', 'Checkout Produk')
+@section('title', 'Checkout — ' . $product->display_name)
+
 @push('styles')
 <style>
-.checkout-grid { display:grid; grid-template-columns:1.5fr 1fr; gap:24px; align-items:start; }
-@media(max-width:768px){ .checkout-grid { grid-template-columns:1fr; } }
-.prod-sum { display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--beige2); }
-.prod-sum img { width:80px; height:80px; object-fit:cover; border-radius:10px; }
+/* ===== CHECKOUT PAGE ===== */
+.co-wrap { display:grid; grid-template-columns:1fr 380px; gap:28px; align-items:start; }
+@media(max-width:860px){ .co-wrap { grid-template-columns:1fr; } }
+
+.co-section-title {
+    font-family:'Syne',sans-serif;
+    font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    color:#3B6D11; margin:0 0 14px;
+}
+
+/* Form card */
+.co-card {
+    background:#fff;
+    border:1.5px solid #C0DD97;
+    border-radius:18px;
+    padding:28px;
+    margin-bottom:20px;
+}
+
+/* Input */
+.co-label { font-size:12px; font-weight:700; color:#0A3323; margin-bottom:6px; display:block; }
+.co-input {
+    width:100%; padding:11px 14px;
+    border:1.5px solid #C0DD97; border-radius:10px;
+    font-family:'DM Sans',sans-serif; font-size:13px; color:#0A3323;
+    background:#FBFDF8; outline:none; transition:.2s;
+    box-sizing:border-box;
+}
+.co-input:focus { border-color:#839958; box-shadow:0 0 0 3px rgba(131,153,88,.15); }
+.co-input[readonly] { background:#f3f4f6; color:#6b7280; cursor:not-allowed; }
+.co-fg { margin-bottom:14px; }
+.co-row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* Payment options */
+.pay-opt {
+    border:2px solid #e5e7eb; border-radius:12px; padding:14px 16px;
+    cursor:pointer; display:flex; align-items:flex-start; gap:12px;
+    transition:.2s; position:relative; margin-bottom:10px;
+}
+.pay-opt:hover { border-color:#839958; background:#FBFDF8; }
+.pay-opt.selected { border-color:#839958; background:#F0F7E6; }
+.pay-opt input[type=radio] { margin-top:3px; accent-color:#3B6D11; flex-shrink:0; width:16px; height:16px; }
+.pay-opt-title { font-weight:700; font-size:13px; color:#0A3323; margin-bottom:2px; }
+.pay-opt-sub  { font-size:11px; color:#666; }
+.pay-opt-badge {
+    position:absolute; top:10px; right:12px;
+    font-size:10px; font-weight:700; padding:2px 8px; border-radius:100px;
+}
+
+/* Summary card */
+.sum-card {
+    background:#0A3323; border-radius:18px; padding:24px;
+    position:sticky; top:80px;
+}
+.sum-prod-img {
+    width:100%; height:180px; object-fit:cover;
+    border-radius:12px; margin-bottom:16px;
+    border:2px solid rgba(255,255,255,.1);
+}
+.sum-prod-placeholder {
+    width:100%; height:180px; background:rgba(255,255,255,.06);
+    border-radius:12px; margin-bottom:16px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:48px;
+}
+.sum-prod-name { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:#F7F4D5; margin-bottom:4px; }
+.sum-upcycler  { font-size:12px; color:#9FE1CB; margin-bottom:16px; }
+.sum-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid rgba(255,255,255,.08); }
+.sum-row-label { font-size:12px; color:#9FE1CB; }
+.sum-row-val   { font-size:13px; color:#F7F4D5; font-weight:600; }
+.sum-total-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0 0; border-top:2px solid rgba(255,255,255,.15); margin-top:4px; }
+.sum-total-label { font-family:'Syne',sans-serif; font-size:14px; color:#F7F4D5; font-weight:800; }
+.sum-total-val   { font-family:'Syne',sans-serif; font-size:22px; color:#C0DD97; font-weight:800; }
+
+/* CTA Button */
+.co-btn {
+    width:100%; padding:16px; border:none; border-radius:12px;
+    font-family:'Syne',sans-serif; font-size:15px; font-weight:800;
+    background:#839958; color:#0A3323;
+    cursor:pointer; transition:.2s; margin-top:20px;
+    box-shadow:0 4px 0 #3B6D11;
+}
+.co-btn:hover { transform:translateY(-2px); box-shadow:0 6px 0 #3B6D11; }
+.co-btn:active { transform:translateY(2px); box-shadow:0 2px 0 #3B6D11; }
+
+/* Koin tag */
+.koin-tag {
+    display:inline-flex; align-items:center; gap:6px;
+    background:#fef9c3; border:1px solid #fde047;
+    border-radius:8px; padding:8px 12px; font-size:12px; color:#854d0e;
+    font-weight:600; margin-top:10px; width:100%; box-sizing:border-box;
+}
 </style>
 @endpush
 
 @section('content')
-<div class="top-bar" style="margin-bottom:20px;">
-    <div>
-        <div class="pg-title">🛍️ Checkout Produk</div>
-        <div class="pg-sub">Selesaikan pesanan Anda untuk {{ $product->display_name }}</div>
-    </div>
-    <a href="{{ route('contributor.dashboard') }}#sec-gallery" class="btn-primary">← Batal</a>
+
+{{-- Back --}}
+<div style="margin-bottom:20px;">
+    <a href="{{ route('contributor.dashboard') }}" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#3B6D11;text-decoration:none;">
+        ← Kembali ke Dashboard
+    </a>
 </div>
 
-<div class="checkout-grid">
-    <div class="card">
-        <div class="card-title">📝 Detail Pengiriman</div>
-        <form id="formCheckout" action="{{ route('contributor.checkout.store', $product->id) }}" method="POST">
+{{-- Error --}}
+@if($errors->any() || session('error'))
+<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#991b1b;font-weight:600;">
+    @foreach($errors->all() as $e) <div>⚠️ {{ $e }}</div> @endforeach
+    @if(session('error')) <div>⚠️ {{ session('error') }}</div> @endif
+</div>
+@endif
+
+<div class="co-wrap">
+
+    {{-- ===== LEFT: FORM ===== --}}
+    <div>
+        <form id="checkoutForm" action="{{ route('contributor.checkout.store', $product->id) }}" method="POST">
             @csrf
-            <div class="fg">
-                <label class="flabel">Nama Penerima *</label>
-                <input type="text" name="recipient_name" class="finput" required value="{{ old('recipient_name', $user->name) }}">
-            </div>
-            <div class="fg">
-                <label class="flabel">Nomor HP / WhatsApp *</label>
-                <input type="text" name="recipient_phone" class="finput" required value="{{ old('recipient_phone', $user->whatsapp) }}">
-            </div>
-            <div class="fg">
-                <label class="flabel">Kota / Kabupaten *</label>
-                <input type="text" name="city" class="finput" required value="{{ old('city') }}" placeholder="Contoh: Jakarta Selatan">
-            </div>
-            <div class="fg">
-                <label class="flabel">Alamat Lengkap *</label>
-                <textarea name="address" class="ftextarea" required rows="3" placeholder="Nama jalan, RT/RW, no rumah, kelurahan...">{{ old('address') }}</textarea>
-            </div>
-            <div class="fg">
-                <label class="flabel">Catatan untuk Penjual (opsional)</label>
-                <input type="text" name="notes" class="finput" value="{{ old('notes') }}" placeholder="Warna, ukuran, atau instruksi khusus">
+
+            {{-- STEP 1: Alamat --}}
+            <div class="co-card">
+                <div class="co-section-title">📍 Langkah 1 — Detail Pengiriman</div>
+
+                <div class="co-row2">
+                    <div class="co-fg">
+                        <label class="co-label">Nama Penerima *</label>
+                        <input type="text" name="recipient_name" class="co-input" required
+                               value="{{ old('recipient_name', $user->name) }}" placeholder="Nama lengkap penerima">
+                    </div>
+                    <div class="co-fg">
+                        <label class="co-label">No. HP / WhatsApp *</label>
+                        <input type="text" name="recipient_phone" class="co-input" required
+                               value="{{ old('recipient_phone', $user->whatsapp) }}" placeholder="08xxxxxxxxxx">
+                    </div>
+                </div>
+                <div class="co-row2">
+                    <div class="co-fg">
+                        <label class="co-label">Kota / Kabupaten *</label>
+                        <input type="text" name="city" class="co-input" required
+                               value="{{ old('city') }}" placeholder="Contoh: Semarang">
+                    </div>
+                    <div class="co-fg">
+                        <label class="co-label">Kode Pos</label>
+                        <input type="text" name="postal_code" class="co-input"
+                               value="{{ old('postal_code') }}" placeholder="Opsional">
+                    </div>
+                </div>
+                <div class="co-fg">
+                    <label class="co-label">Alamat Lengkap *</label>
+                    <textarea name="address" class="co-input" required rows="3"
+                              placeholder="Nama jalan, no. rumah, RT/RW, kelurahan, kecamatan...">{{ old('address') }}</textarea>
+                </div>
+                <div class="co-fg">
+                    <label class="co-label">Catatan untuk Penjual <span style="color:#aaa;font-weight:400;">(opsional)</span></label>
+                    <input type="text" name="notes" class="co-input"
+                           value="{{ old('notes') }}" placeholder="Warna pilihan, instruksi khusus, dll.">
+                </div>
             </div>
 
-            <div class="card-title" style="margin-top:24px;">💳 Metode Pembayaran</div>
-            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-                <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--moss);border-radius:10px;cursor:pointer;background:var(--beige);">
-                    <input type="radio" name="payment_method" value="transfer" checked style="accent-color:var(--moss);width:18px;height:18px;">
-                    <div>
-                        <div style="font-weight:700;color:var(--dk);">Transfer Bank / E-Wallet</div>
-                        <div style="font-size:12px;color:var(--muted);">Transfer manual ke rekening pembuat (Upcycler)</div>
+            {{-- STEP 2: Pembayaran --}}
+            <div class="co-card">
+                <div class="co-section-title">💳 Langkah 2 — Metode Pembayaran</div>
+
+                {{-- OPSI TRANSFER --}}
+                <label class="pay-opt" id="opt-transfer" onclick="selectPay('transfer')">
+                    <input type="radio" name="payment_method" value="transfer" checked>
+                    <div style="flex:1;">
+                        <div class="pay-opt-title">🏦 Transfer Bank / E-Wallet</div>
+                        <div class="pay-opt-sub">Transfer ke rekening Penjual setelah checkout.<br>Penjual akan mengirimkan nomor rekening via WhatsApp.</div>
                     </div>
+                    <span class="pay-opt-badge" style="background:#e0f2fe;color:#0369a1;">Populer</span>
                 </label>
-                
-                @php $koinNeeded = ceil($product->price / 2500); @endphp
-                <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--beige2);border-radius:10px;cursor:pointer;background:var(--beige);opacity:{{ $user->koin >= $koinNeeded ? '1' : '0.6' }};">
-                    <input type="radio" name="payment_method" value="koin" {{ $user->koin < $koinNeeded ? 'disabled' : '' }} style="accent-color:var(--moss);width:18px;height:18px;">
-                    <div>
-                        <div style="font-weight:700;color:var(--dk);">Bayar dengan Koin (Butuh {{ $koinNeeded }} Koin)</div>
-                        <div style="font-size:12px;color:var(--muted);">
-                            Saldo Anda: {{ $user->koin }} Koin 
-                            @if($user->koin < $koinNeeded) <span style="color:#991b1b;font-weight:600;">(Koin Tidak Cukup)</span> @endif
+
+                {{-- OPSI KOIN --}}
+                @php $koinNeeded = ceil($product->price / 2500); $canPayKoin = $user->koin >= $koinNeeded; @endphp
+                <label class="pay-opt {{ !$canPayKoin ? 'opacity-60' : '' }}" id="opt-koin" onclick="{{ $canPayKoin ? 'selectPay(\'koin\')' : '' }}" style="{{ !$canPayKoin ? 'cursor:not-allowed;opacity:.55;' : '' }}">
+                    <input type="radio" name="payment_method" value="koin" {{ !$canPayKoin ? 'disabled' : '' }}>
+                    <div style="flex:1;">
+                        <div class="pay-opt-title">🪙 Tukar Koin UpcycleMatch</div>
+                        <div class="pay-opt-sub">
+                            Butuh <strong>{{ $koinNeeded }} Koin</strong> · Saldo kamu: <strong>{{ $user->koin }} Koin</strong>
+                            @if(!$canPayKoin) <span style="color:#ef4444;"> (Tidak Cukup)</span> @endif
                         </div>
                     </div>
+                    @if($canPayKoin)
+                    <span class="pay-opt-badge" style="background:#dcfce7;color:#166534;">Langsung Lunas</span>
+                    @endif
                 </label>
+
+                {{-- Info koin --}}
+                @if($canPayKoin)
+                <div class="koin-tag">
+                    ⚡ Jika bayar pakai Koin, pesanan langsung berstatus <strong>Lunas</strong> & Penjual akan segera memproses pengiriman.
+                </div>
+                @else
+                <div class="koin-tag" style="background:#fef2f2;border-color:#fca5a5;color:#991b1b;">
+                    💡 Koin kamu belum cukup. Kumpulkan lebih banyak Koin dengan mengupload limbah kain!
+                </div>
+                @endif
             </div>
 
-            <button type="submit" class="post-btn" style="width:100%;font-size:15px;padding:14px;">💳 Bayar Sekarang</button>
+            {{-- Hidden submit trigger from summary card --}}
+            <button id="coSubmit" type="submit" style="display:none;"></button>
         </form>
     </div>
 
-    <div class="card">
-        <div class="card-title">Ringkasan Pesanan</div>
-        <div class="prod-sum">
-            @if($product->photo)
-            <img src="{{ asset('storage/'.$product->photo) }}">
-            @else
-            <div style="width:80px;height:80px;background:#e5e7eb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;">🎨</div>
-            @endif
-            <div>
-                <div style="font-weight:700;color:var(--dk);">{{ $product->display_name }}</div>
-                <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">oleh {{ $product->upcycler->name ?? 'Upcycler' }}</div>
-                <div style="font-size:11px;background:#f3f4f6;padding:4px 8px;border-radius:6px;display:inline-block;">Kategori: {{ ucfirst($product->category) }}</div>
-            </div>
+    {{-- ===== RIGHT: SUMMARY ===== --}}
+    <div class="sum-card">
+        @if($product->photo)
+        <img src="{{ asset('storage/'.$product->photo) }}" class="sum-prod-img" alt="{{ $product->display_name }}">
+        @else
+        <div class="sum-prod-placeholder">🎨</div>
+        @endif
+
+        <div class="sum-prod-name">{{ $product->display_name }}</div>
+        <div class="sum-upcycler">✂️ dibuat oleh <strong>{{ $product->upcycler->name ?? 'Upcycler' }}</strong></div>
+
+        @if($product->category)
+        <div style="margin-bottom:16px;">
+            <span style="background:rgba(131,153,88,.2);color:#C0DD97;font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;">
+                {{ ucfirst($product->category) }}
+            </span>
         </div>
-        
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
-            <span style="color:var(--muted);">Harga Produk</span>
-            <span style="color:var(--dk);font-weight:600;">Rp{{ number_format($product->price, 0, ',', '.') }}</span>
+        @endif
+
+        <div class="sum-row">
+            <span class="sum-row-label">Harga Produk</span>
+            <span class="sum-row-val">Rp{{ number_format($product->price, 0, ',', '.') }}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:13px;padding-bottom:16px;border-bottom:1px solid var(--beige2);">
-            <span style="color:var(--muted);">Ongkos Kirim</span>
-            <span style="color:var(--moss);font-weight:700;">Dihitung Nanti</span>
+        <div class="sum-row">
+            <span class="sum-row-label">Ongkos Kirim</span>
+            <span class="sum-row-val" style="color:#9FE1CB;">Dikonfirmasi penjual</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:var(--dk);">
-            <span>Total Bayar</span>
-            <span>Rp{{ number_format($product->price, 0, ',', '.') }}</span>
+
+        <div class="sum-total-row">
+            <span class="sum-total-label">Total Bayar</span>
+            <span class="sum-total-val">Rp{{ number_format($product->price, 0, ',', '.') }}</span>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:12px;text-align:center;">
-            *Harga belum termasuk ongkos kirim. Upcycler akan menghubungi Anda untuk detail pengiriman.
+
+        <button class="co-btn" onclick="document.getElementById('coSubmit').click();">
+            🛒 Konfirmasi Pesanan
+        </button>
+
+        <div style="text-align:center;font-size:11px;color:#9FE1CB;margin-top:12px;line-height:1.6;">
+            Dengan menekan tombol, kamu menyetujui <br>syarat & ketentuan UpcycleMatch.
         </div>
     </div>
 </div>
+
+<script>
+function selectPay(method) {
+    document.querySelectorAll('.pay-opt').forEach(el => el.classList.remove('selected'));
+    if (method === 'transfer') {
+        document.querySelector('[value=transfer]').checked = true;
+        document.getElementById('opt-transfer').classList.add('selected');
+    } else {
+        document.querySelector('[value=koin]').checked = true;
+        document.getElementById('opt-koin').classList.add('selected');
+    }
+}
+// Set initial state
+selectPay('transfer');
+</script>
 @endsection

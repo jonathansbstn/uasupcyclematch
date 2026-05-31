@@ -29,7 +29,7 @@ class ContributorController extends Controller
         $limbahList = $myTextiles;
 
         $koinTransactions = KoinTransaction::where('user_id', $user->id)->latest()->get();
-        $recentOrders     = collect();
+        $recentOrders = \App\Models\Order::with('product')->where('buyer_id', $user->id)->latest()->take(3)->get();
 
         // Produk published dari upcycler (untuk section Beli Produk)
         $publishedProducts = Product::with(['upcycler', 'textile'])

@@ -12,7 +12,8 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'whatsapp', 'password', 'role', 'koin', 'is_verified'
+        'name', 'email', 'whatsapp', 'password', 'role', 'koin', 'saldo', 'is_verified',
+        'bank_name', 'bank_account', 'bank_holder',
     ];
 
     protected $hidden = [
@@ -23,6 +24,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password'          => 'hashed',
         'koin'              => 'integer',
+        'saldo'             => 'integer',
         'is_verified'       => 'boolean',
     ];
 
