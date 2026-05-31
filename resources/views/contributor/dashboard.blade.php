@@ -12,8 +12,10 @@
 .topbar-logo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--beige);letter-spacing:-0.3px;}
 .topbar-logo span{color:var(--rosy);}
 .topbar-nav{display:flex;gap:2px;}
-.tnav{background:none;border:none;padding:5px 12px;border-radius:6px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;color:rgba(247,244,213,0.6);cursor:pointer;}
+.tnav{background:none;border:none;padding:5px 12px;border-radius:6px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;color:rgba(247,244,213,0.6);cursor:pointer;transition:all 0.2s;}
+.tnav:hover{background:rgba(247,244,213,0.15);color:var(--beige);}
 .tnav.on{background:var(--moss);color:var(--dk);}
+.tnav.on:hover{background:#96af65;}
 .topbar-right{display:flex;align-items:center;gap:10px;}
 .koin-pill{background:rgba(247,244,213,0.12);border:1px solid rgba(247,244,213,0.25);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--beige);display:flex;align-items:center;gap:5px;}
 .notif-btn{background:none;border:none;color:rgba(247,244,213,0.7);cursor:pointer;font-size:18px;position:relative;}
@@ -21,6 +23,13 @@
 .avatar-pill{display:flex;align-items:center;gap:8px;cursor:pointer;}
 .av-circle{width:32px;height:32px;border-radius:50%;background:var(--rosy);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;}
 .av-name{font-size:12px;font-weight:700;color:var(--beige);}
+.logout-btn{
+  background:rgba(247,244,213,0.12);border:1.5px solid rgba(247,244,213,0.25);
+  border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--beige);
+  font-family:'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;
+  transition:all 0.2s;
+}
+.logout-btn:hover{background:rgba(211,150,140,0.25);border-color:var(--rosy);color:var(--rosy);}
 
 .breadcrumb{background:var(--beige2);padding:8px 1.5rem;font-size:11px;color:var(--muted);border-bottom:1px solid rgba(10,51,35,0.08);}
 .breadcrumb span{color:var(--dk);font-weight:700;}
@@ -150,19 +159,24 @@
   <div class="topbar">
     <div class="topbar-logo">Upcycle<span>Match</span></div>
     <div class="topbar-nav">
-      <button class="tnav on">Beranda</button>
-      <button class="tnav">Peta Limbah</button>
-      <button class="tnav">Klaim Kain</button>
-      <button class="tnav">Upload Karya</button>
+      <button class="tnav on" onclick="showSec('upload')">Beranda</button>
+      <button class="tnav" onclick="showSec('tracker')">Live Tracker</button>
+      <button class="tnav" onclick="showSec('wallet')">Eco-Wallet</button>
+      <button class="tnav" onclick="showSec('gallery')">Beli Produk</button>
     </div>
     <div class="topbar-right">
-      <div class="koin-pill"><i class="ti ti-star" aria-hidden="true"></i> 13 Koin</div>
-      <button class="notif-btn" aria-label="Notifikasi"><i class="ti ti-bell"></i><span class="notif-dot"></span></button>
-      <div class="avatar-pill">
-        <div class="av-circle">TH</div>
-        <div class="av-name">Hai, Theo</div>
-        <i class="ti ti-chevron-down" style="font-size:13px;color:rgba(247,244,213,0.6);"></i>
+      <div class="koin-pill"><i class="ti ti-star" aria-hidden="true"></i> {{ $stats['total_koin'] }} Koin</div>
+      <!-- Avatar + Logout -->
+      <div class="avatar-pill" title="{{ $user->name }}" style="cursor:default;">
+        <div class="av-circle">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
+        <div class="av-name">{{ explode(' ', trim($user->name))[0] }}</div>
       </div>
+      <form id="logout-form" action="{{ route('logout') }}" method="POST" style="margin:0;">
+        @csrf
+        <button type="submit" class="logout-btn" title="Keluar dari akun">
+          <i class="ti ti-logout"></i> Keluar
+        </button>
+      </form>
     </div>
   </div>
 
@@ -195,110 +209,120 @@
             <div class="gi-icon"><i class="ti ti-leaf" style="font-size:18px;color:var(--moss);" aria-hidden="true"></i></div>
             <div>
               <div class="gi-label">Green Identity</div>
-              <div class="gi-name">Theo Hermawan — Kontributor Aktif</div>
+              <div class="gi-name">{{ $user->name }} — Kontributor Aktif</div>
             </div>
           </div>
           <div class="gi-metrics">
-            <div class="gi-m"><div class="gi-m-val">13.3</div><div class="gi-m-sub">Kg Kain Diselamatkan</div></div>
-            <div class="gi-m"><div class="gi-m-val">5</div><div class="gi-m-sub">Postingan Aktif</div></div>
-            <div class="gi-m"><div class="gi-m-val gold">13</div><div class="gi-m-sub">Total Koin</div></div>
+            <div class="gi-m"><div class="gi-m-val">{{ number_format($stats['total_berat'], 1) }}</div><div class="gi-m-sub">Kg Kain Diselamatkan</div></div>
+            <div class="gi-m"><div class="gi-m-val">{{ $stats['postingan_aktif'] }}</div><div class="gi-m-sub">Postingan Aktif</div></div>
+            <div class="gi-m"><div class="gi-m-val gold">{{ $stats['total_koin'] }}</div><div class="gi-m-sub">Total Koin</div></div>
             <div class="gi-m"><div class="gi-m-val">4.9 <i class="ti ti-star" style="font-size:18px;color:#E8C96A;" aria-hidden="true"></i></div><div class="gi-m-sub">Rating Kontributor</div></div>
           </div>
         </div>
 
-        <div id="success-post" class="success-overlay">
+        @if(session('success'))
+        <div class="success-overlay on">
           <i class="ti ti-circle-check" style="font-size:20px;color:#3B6D11;" aria-hidden="true"></i>
-          <div><div style="font-size:13px;font-weight:700;color:#27500A;">Limbah berhasil diposting!</div><div style="font-size:11px;color:#3B6D11;margin-top:1px;">+2 Koin otomatis ditambahkan ke saldo kamu</div></div>
+          <div><div style="font-size:13px;font-weight:700;color:#27500A;">{{ session('success') }}</div></div>
         </div>
+        @endif
+
+        @if ($errors->any())
+        <div style="background:#FAEEDA; border:1px solid #EF9F27; color:#854F0B; padding:10px; border-radius:8px; margin-bottom:12px; font-size:12px;">
+            @foreach ($errors->all() as $error)
+                <div>- {{ $error }}</div>
+            @endforeach
+        </div>
+        @endif
 
         <div class="two-col">
           <div class="card">
-            <div class="card-title"><i class="ti ti-package" aria-hidden="true"></i> Upload Limbah Kain</div>
-            <div class="fg">
-              <label class="flabel">Judul Postingan</label>
-              <input class="finput" id="inp-judul" placeholder="Contoh: Kain Katun Bekas 5kg – Kondisi Baik" />
-            </div>
-            <div class="frow fg">
-              <div>
-                <label class="flabel">Jenis Bahan</label>
-                <select class="fselect" id="inp-jenis">
-                  <option value="">Pilih jenis</option>
-                  <option>Katun</option>
-                  <option>Denim</option>
-                  <option>Sutra</option>
-                  <option>Polyester</option>
-                </select>
+            <form action="{{ route('contributor.post') }}" method="POST" enctype="multipart/form-data">
+              @csrf
+              <div class="card-title"><i class="ti ti-package" aria-hidden="true"></i> Upload Limbah Kain</div>
+              <div class="fg">
+                <label class="flabel">Judul Postingan *</label>
+                <input class="finput" name="judul" id="inp-judul" placeholder="Contoh: Kain Katun Bekas 5kg – Kondisi Baik" required />
               </div>
-              <div>
-                <label class="flabel">Estimasi Berat (kg)</label>
-                <input class="finput" id="inp-berat" type="number" step="0.1" placeholder="0.0 kg" />
+              <div class="frow fg">
+                <div>
+                  <label class="flabel">Jenis Bahan *</label>
+                  <select class="fselect" name="jenis_bahan" id="inp-jenis" required>
+                    <option value="">Pilih jenis</option>
+                    <option value="katun">Katun</option>
+                    <option value="denim">Denim</option>
+                    <option value="sutra">Sutra</option>
+                    <option value="polyester">Polyester</option>
+                    <option value="lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="flabel">Estimasi Berat (kg) *</label>
+                  <input class="finput" name="berat_kg" id="inp-berat" type="number" step="0.1" min="0.1" placeholder="0.0 kg" required />
+                </div>
               </div>
-            </div>
-            <div class="fg">
-              <label class="flabel">Deskripsi Kondisi</label>
-              <textarea class="ftextarea" id="inp-desc" rows="3" placeholder="Catatan kondisi kain, warna, ukuran, dll..."></textarea>
-            </div>
-            <div class="fg">
-              <label class="flabel"><i class="ti ti-map-pin" style="font-size:13px;" aria-hidden="true"></i> Titik Lokasi Penjemputan</label>
-              <div class="map-box" onclick="setMap()">
-                <div class="map-box-icon"><i class="ti ti-map" aria-hidden="true"></i></div>
-                <div class="map-box-txt" id="map-txt">Klik untuk set lokasi rumahmu</div>
-                <div class="map-box-sub">Powered by Leaflet.js + OpenStreetMap</div>
+              <div class="fg">
+                <label class="flabel">Alamat Penjemputan</label>
+                <input class="finput" name="alamat" id="inp-alamat" placeholder="Nama jalan, kelurahan, kecamatan, kota..." />
               </div>
-              <div class="coord-row">
-                <input class="finput" id="inp-lat" placeholder="-7.1575°" style="font-size:12px;" />
-                <input class="finput" id="inp-lng" placeholder="112.7521°" style="font-size:12px;" />
+              <div class="fg">
+                <label class="flabel">📷 Foto Limbah (opsional, max 5MB)</label>
+                <div style="border:2px dashed var(--moss);border-radius:8px;padding:12px;text-align:center;cursor:pointer;background:#FBFDF8;" onclick="document.getElementById('inp-foto').click()" id="foto-drop">
+                  <div style="font-size:24px;margin-bottom:4px;">📷</div>
+                  <div style="font-size:12px;color:var(--muted);" id="foto-label">Klik untuk pilih foto (JPG, PNG, maks 5MB)</div>
+                </div>
+                <input type="file" id="inp-foto" name="foto" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewFoto(this)" />
+                <div id="foto-preview" style="display:none;margin-top:8px;">
+                  <img id="foto-img" style="max-height:120px;border-radius:8px;border:1.5px solid var(--beige2);" />
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="foto-name"></div>
+                </div>
               </div>
-            </div>
-            <button class="post-btn" onclick="doPost()"><i class="ti ti-send" aria-hidden="true"></i> Posting Kain Saya</button>
+              <div class="fg">
+                <label class="flabel">Deskripsi Kondisi</label>
+                <textarea class="ftextarea" name="deskripsi" id="inp-desc" rows="2" placeholder="Catatan kondisi kain, warna, ukuran, dll..."></textarea>
+              </div>
+              <div class="fg">
+                <label class="flabel"><i class="ti ti-map-pin" style="font-size:13px;" aria-hidden="true"></i> Titik Lokasi Penjemputan (opsional)</label>
+                <div class="map-box" onclick="openPickerModal()" id="map-box-btn">
+                  <div class="map-box-icon"><i class="ti ti-map" aria-hidden="true"></i></div>
+                  <div class="map-box-txt" id="map-txt">Klik untuk pin lokasi di peta</div>
+                  <div class="map-box-sub">OpenStreetMap — gratis & akurat</div>
+                </div>
+                <div class="coord-row">
+                  <input class="finput" name="latitude"  id="inp-lat" placeholder="Lat: -7.1575°" style="font-size:12px;" readonly />
+                  <input class="finput" name="longitude" id="inp-lng" placeholder="Lng: 112.7521°" style="font-size:12px;" readonly />
+                </div>
+              </div>
+              <button type="submit" class="post-btn"><i class="ti ti-send" aria-hidden="true"></i> Posting Kain Saya</button>
+            </form>
           </div>
 
           <div style="display:flex;flex-direction:column;gap:1rem;">
             <div class="card">
               <div class="card-title"><i class="ti ti-refresh" aria-hidden="true"></i> Live Status Tracker</div>
+              @forelse($limbahList->take(5) as $limbah)
               <div class="track-item">
-                <div class="tdot av"></div>
+                <div class="tdot {{ $limbah->status === 'available' ? 'av' : ($limbah->status === 'claimed' ? 'cl' : 'cp') }}"></div>
                 <div class="tinfo">
-                  <div class="tname">Kaos Polos Katun 3kg</div>
-                  <div class="tsub">Dipost 2 hari lalu · Kec. Adiwerna</div>
+                  <div class="tname">{{ $limbah->title ?? $limbah->judul ?? 'Tanpa Judul' }} ({{ number_format($limbah->weight ?? $limbah->berat_kg ?? 0, 1) }}kg)</div>
+                  <div class="tsub">Dipost {{ $limbah->created_at->diffForHumans() }}</div>
                 </div>
-                <span class="tbadge bav">Available</span>
+                <span class="tbadge {{ $limbah->status === 'available' ? 'bav' : ($limbah->status === 'claimed' ? 'bcl' : 'bcp') }}">{{ ucfirst($limbah->status) }}</span>
               </div>
-              <div class="track-item">
-                <div class="tdot cl"></div>
-                <div class="tinfo">
-                  <div class="tname">Baju Denim Rusak 1.8kg</div>
-                  <div class="tsub">Diklaim oleh Toko Jahit Maju</div>
-                </div>
-                <span class="tbadge bcl">Claimed</span>
-              </div>
-              <div class="track-item">
-                <div class="tdot cp"></div>
-                <div class="tinfo">
-                  <div class="tname">Kain Sutra Sisa 0.5kg</div>
-                  <div class="tsub">Sudah jadi produk · Lihat galeri</div>
-                </div>
-                <span class="tbadge bcp">Completed</span>
-              </div>
-              <div class="track-item">
-                <div class="tdot av"></div>
-                <div class="tinfo">
-                  <div class="tname">Polyester Mix 2.1kg</div>
-                  <div class="tsub">Dipost hari ini · Kec. Talang</div>
-                </div>
-                <span class="tbadge bav">Available</span>
-              </div>
+              @empty
+              <div style="text-align:center; font-size:13px; color:var(--muted); padding:10px 0;">Belum ada riwayat pengiriman kain.</div>
+              @endforelse
             </div>
 
             <div class="wallet-card">
               <div class="wc-title"><i class="ti ti-star" style="font-size:18px;color:var(--dk);" aria-hidden="true"></i> Eco-Wallet Saya</div>
               <div class="wc-big">
-                <div class="wc-num" id="koin-display">13</div>
+                <div class="wc-num" id="koin-display">{{ $stats['total_koin'] }}</div>
                 <div class="wc-unit">Koin</div>
               </div>
-              <div class="wc-rp">≈ Rp<span id="rp-display">32.500</span></div>
+              <div class="wc-rp">≈ Rp<span id="rp-display">{{ number_format($stats['total_rupiah'], 0, ',', '.') }}</span></div>
               <div class="wc-prog">
-                <div class="wc-prog-fill" id="prog-fill"></div>
+                <div class="wc-prog-fill" id="prog-fill" style="width: {{ min(($stats['total_koin'] / 20) * 100, 100) }}%"></div>
               </div>
               <div class="wc-prog-label"><span>0</span><span>Target 20 Koin</span></div>
               <div class="wc-note">+2 koin otomatis setiap upload limbah baru · 1 koin = Rp2.500</div>
@@ -316,25 +340,32 @@
         </div>
         <div class="three-col">
           <div style="background:#EAF3DE;border-radius:var(--r);padding:14px;text-align:center;border:1.5px solid #97C459;">
-            <div style="font-size:22px;font-weight:800;color:#27500A;">3</div>
+            <div style="font-size:22px;font-weight:800;color:#27500A;">{{ $limbahList->where('status', 'available')->count() }}</div>
             <div style="font-size:10px;color:#3B6D11;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Available</div>
           </div>
           <div style="background:#E6F1FB;border-radius:var(--r);padding:14px;text-align:center;border:1.5px solid #85B7EB;">
-            <div style="font-size:22px;font-weight:800;color:#0C447C;">1</div>
+            <div style="font-size:22px;font-weight:800;color:#0C447C;">{{ $limbahList->where('status', 'claimed')->count() }}</div>
             <div style="font-size:10px;color:#185FA5;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Claimed</div>
           </div>
           <div style="background:#FAEEDA;border-radius:var(--r);padding:14px;text-align:center;border:1.5px solid #EF9F27;">
-            <div style="font-size:22px;font-weight:800;color:#633806;">1</div>
+            <div style="font-size:22px;font-weight:800;color:#633806;">{{ $limbahList->where('status', 'completed')->count() }}</div>
             <div style="font-size:10px;color:#854F0B;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Completed</div>
           </div>
         </div>
         <div class="card">
           <div class="card-title"><i class="ti ti-list" aria-hidden="true"></i> Semua Postingan Limbah</div>
-          <div class="track-item"><div class="tdot av"></div><div class="tinfo"><div class="tname">Kaos Polos Katun 3kg</div><div class="tsub">Dipost 2 hari lalu · Kec. Adiwerna · -7.1523°, 109.9152°</div></div><span class="tbadge bav">Available</span></div>
-          <div class="track-item"><div class="tdot cl"></div><div class="tinfo"><div class="tname">Baju Denim Rusak 1.8kg</div><div class="tsub">Diklaim oleh Toko Jahit Maju · 3 hari lalu</div></div><span class="tbadge bcl">Claimed</span></div>
-          <div class="track-item"><div class="tdot cp"></div><div class="tinfo"><div class="tname">Kain Sutra Sisa 0.5kg</div><div class="tsub">Selesai diproses · Lihat produk di galeri</div></div><span class="tbadge bcp">Completed</span></div>
-          <div class="track-item"><div class="tdot av"></div><div class="tinfo"><div class="tname">Polyester Mix 2.1kg</div><div class="tsub">Dipost hari ini · Kec. Talang</div></div><span class="tbadge bav">Available</span></div>
-          <div class="track-item"><div class="tdot av"></div><div class="tinfo"><div class="tname">Kain Flanel Warna 0.9kg</div><div class="tsub">Dipost kemarin · Kec. Pangkah</div></div><span class="tbadge bav">Available</span></div>
+          @forelse($limbahList as $limbah)
+          <div class="track-item">
+            <div class="tdot {{ $limbah->status === 'available' ? 'av' : ($limbah->status === 'claimed' ? 'cl' : 'cp') }}"></div>
+            <div class="tinfo">
+              <div class="tname">{{ $limbah->judul }} ({{ $limbah->berat_kg }}kg)</div>
+              <div class="tsub">Dipost {{ $limbah->created_at->diffForHumans() }}</div>
+            </div>
+            <span class="tbadge {{ $limbah->status === 'available' ? 'bav' : ($limbah->status === 'claimed' ? 'bcl' : 'bcp') }}">{{ ucfirst($limbah->status) }}</span>
+          </div>
+          @empty
+          <div style="text-align:center; font-size:13px; color:var(--muted); padding:10px 0;">Belum ada riwayat pengiriman kain.</div>
+          @endforelse
         </div>
       </div>
 
@@ -349,12 +380,12 @@
             <div class="wallet-card" style="margin-bottom:1rem;">
               <div class="wc-title"><i class="ti ti-star" style="font-size:18px;color:var(--dk);" aria-hidden="true"></i> Saldo Koin</div>
               <div class="wc-big">
-                <div class="wc-num">13</div>
+                <div class="wc-num">{{ $stats['total_koin'] }}</div>
                 <div class="wc-unit">Koin</div>
               </div>
-              <div class="wc-rp">≈ Rp32.500</div>
+              <div class="wc-rp">≈ Rp{{ number_format($stats['total_rupiah'], 0, ',', '.') }}</div>
               <div class="wc-prog" style="margin-top:10px;">
-                <div class="wc-prog-fill"></div>
+                <div class="wc-prog-fill" style="width: {{ min(($stats['total_koin'] / 20) * 100, 100) }}%"></div>
               </div>
               <div class="wc-prog-label"><span>0</span><span>Target 20 Koin</span></div>
               <div class="wc-note">Setiap upload limbah baru = +2 koin otomatis · Tidak ada minimal berat</div>
@@ -362,12 +393,18 @@
 
             <div class="card">
               <div class="card-title"><i class="ti ti-history" aria-hidden="true"></i> Riwayat Koin</div>
-              <div class="history-row"><div class="hist-icon"><i class="ti ti-upload" style="font-size:14px;color:var(--moss);" aria-hidden="true"></i></div><div class="hist-info"><div class="hist-name">Upload: Kaos Polos Katun 3kg</div><div class="hist-sub">2 hari lalu</div></div><div class="hist-koin">+2</div></div>
-              <div class="history-row"><div class="hist-icon"><i class="ti ti-upload" style="font-size:14px;color:var(--moss);" aria-hidden="true"></i></div><div class="hist-info"><div class="hist-name">Upload: Baju Denim Rusak 1.8kg</div><div class="hist-sub">3 hari lalu</div></div><div class="hist-koin">+2</div></div>
-              <div class="history-row"><div class="hist-icon"><i class="ti ti-upload" style="font-size:14px;color:var(--moss);" aria-hidden="true"></i></div><div class="hist-info"><div class="hist-name">Upload: Kain Sutra Sisa 0.5kg</div><div class="hist-sub">5 hari lalu</div></div><div class="hist-koin">+2</div></div>
-              <div class="history-row"><div class="hist-icon"><i class="ti ti-upload" style="font-size:14px;color:var(--moss);" aria-hidden="true"></i></div><div class="hist-info"><div class="hist-name">Upload: Polyester Mix 2.1kg</div><div class="hist-sub">Hari ini</div></div><div class="hist-koin">+2</div></div>
-              <div class="history-row"><div class="hist-icon"><i class="ti ti-upload" style="font-size:14px;color:var(--moss);" aria-hidden="true"></i></div><div class="hist-info"><div class="hist-name">Upload: Kain Flanel Warna 0.9kg</div><div class="hist-sub">Kemarin</div></div><div class="hist-koin">+2</div></div>
-              <div class="history-row"><div class="hist-icon"><i class="ti ti-receipt" style="font-size:14px;color:var(--rosy);" aria-hidden="true"></i></div><div class="hist-info"><div class="hist-name">Pencairan ke BRI – xxxx3421</div><div class="hist-sub">2 minggu lalu</div></div><div style="font-size:14px;font-weight:800;color:var(--rosy);">-3</div></div>
+              @forelse($koinTransactions as $tx)
+              <div class="history-row">
+                <div class="hist-icon"><i class="ti {{ $tx->amount > 0 ? 'ti-upload' : 'ti-receipt' }}" style="font-size:14px;color:var(--moss);" aria-hidden="true"></i></div>
+                <div class="hist-info">
+                  <div class="hist-name">{{ $tx->keterangan }}</div>
+                  <div class="hist-sub">{{ $tx->created_at->diffForHumans() }}</div>
+                </div>
+                <div class="hist-koin" style="{{ $tx->amount < 0 ? 'color:var(--rosy);' : '' }}">{{ $tx->amount > 0 ? '+' : '' }}{{ $tx->amount }}</div>
+              </div>
+              @empty
+              <div style="text-align:center; font-size:12px; color:var(--muted); padding:10px;">Belum ada riwayat koin.</div>
+              @endforelse
             </div>
           </div>
 
@@ -375,8 +412,8 @@
             <div class="card">
               <div class="card-title"><i class="ti ti-cash" aria-hidden="true"></i> Cairkan Koin</div>
               <div class="koin-sum">
-                <div class="ks-big">13 Koin</div>
-                <div class="ks-rp">Setara Rp32.500</div>
+                <div class="ks-big">{{ $stats['total_koin'] }} Koin</div>
+                <div class="ks-rp">Setara Rp{{ number_format($stats['total_rupiah'], 0, ',', '.') }}</div>
               </div>
               <div class="fg">
                 <label class="flabel">Metode Pencairan</label>
@@ -400,7 +437,7 @@
               <div style="background:var(--beige2);border-radius:8px;padding:12px;font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px;">
                 <strong style="color:var(--dk);">Info:</strong> Pencairan diproses dalam 1×24 jam kerja. Minimal pencairan 4 koin (Rp10.000). Fitur ini merupakan simulasi sistem gamifikasi ekonomi sirkular.
               </div>
-              <button class="post-btn" onclick="doCvt()"><i class="ti ti-arrow-right" aria-hidden="true"></i> Cairkan Rp32.500</button>
+              <button class="post-btn" onclick="doCvt()"><i class="ti ti-arrow-right" aria-hidden="true"></i> Cairkan Rp{{ number_format($stats['total_rupiah'], 0, ',', '.') }}</button>
               <div class="toast on" id="cvt-toast" style="margin-top:12px;display:none;">
                 <i class="ti ti-check" aria-hidden="true"></i> Pencairan berhasil diajukan! (simulasi frontend)
               </div>
@@ -416,34 +453,33 @@
           <div class="sec-sub">Produk kreatif dari limbah kain hasil karya mitra penjahit UpcycleMatch</div>
         </div>
         <div class="three-col" style="margin-bottom:1rem;">
-          <div class="sm-card"><div class="sm-val" style="color:var(--dk);">1,820</div><div class="sm-lbl">Produk Tersedia</div></div>
-          <div class="sm-card"><div class="sm-val" style="color:var(--mid);">204</div><div class="sm-lbl">Mitra Penjahit</div></div>
-          <div class="sm-card"><div class="sm-val" style="color:var(--rosy);">3</div><div class="sm-lbl">Produkku Dibeli</div></div>
+          <div class="sm-card"><div class="sm-val" style="color:var(--dk);">{{ $publishedProducts->count() }}</div><div class="sm-lbl">Produk Tersedia</div></div>
+          <div class="sm-card"><div class="sm-val" style="color:var(--mid);">{{ \App\Models\User::where('role', 'upcycler')->where('is_verified', true)->count() }}</div><div class="sm-lbl">Mitra Penjahit</div></div>
+          <div class="sm-card"><div class="sm-val" style="color:var(--rosy);">{{ $user->koin }}</div><div class="sm-lbl">Koin Anda</div></div>
         </div>
         <div class="card">
           <div class="card-title"><i class="ti ti-shopping-bag" aria-hidden="true"></i> Upcycle Gallery</div>
-          <div class="prod-item">
-            <div class="prod-thumb pt1"><i class="ti ti-briefcase" style="font-size:20px;color:#3B6D11;" aria-hidden="true"></i></div>
-            <div class="prod-info"><div class="prod-name">Tas Perca Katun Premium</div><div class="prod-price">Rp85.000</div><div class="prod-sold">oleh Ibu Rini · Semarang · 48 terjual</div></div>
-            <button style="background:var(--dk);color:var(--beige);border:none;border-radius:7px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;" onclick="doToast('checkout-toast','Menuju checkout...')">Beli</button>
+          
+          @forelse($publishedProducts as $p)
+          <div class="prod-item" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--beige2);">
+            @if($p->photo)
+              <img src="{{ asset('storage/'.$p->photo) }}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;" />
+            @else
+              <div class="prod-thumb pt1"><i class="ti ti-briefcase" style="font-size:20px;color:#3B6D11;" aria-hidden="true"></i></div>
+            @endif
+            <div class="prod-info" style="flex:1;">
+              <div class="prod-name" style="font-weight:700;color:var(--dk);">{{ $p->display_name }}</div>
+              <div class="prod-price" style="font-size:13px;color:var(--moss);font-weight:700;">Rp{{ number_format($p->price, 0, ',', '.') }}</div>
+              <div class="prod-sold" style="font-size:11px;color:var(--muted);">oleh {{ $p->upcycler->name ?? 'Upcycler' }}</div>
+            </div>
+            <a href="{{ route('contributor.checkout', $p->id) }}" style="background:var(--dk);color:var(--beige);border:none;border-radius:7px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;">Beli</a>
           </div>
-          <div class="prod-item">
-            <div class="prod-thumb pt2"><i class="ti ti-gift" style="font-size:20px;color:#0C447C;" aria-hidden="true"></i></div>
-            <div class="prod-info"><div class="prod-name">Scrunchie Set Denim (isi 3)</div><div class="prod-price">Rp35.000</div><div class="prod-sold">oleh Toko Jahit Maju · Tegal · 112 terjual</div></div>
-            <button style="background:var(--dk);color:var(--beige);border:none;border-radius:7px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;" onclick="doToast('checkout-toast','Menuju checkout...')">Beli</button>
-          </div>
-          <div class="prod-item">
-            <div class="prod-thumb pt3"><i class="ti ti-shirt" style="font-size:20px;color:#633806;" aria-hidden="true"></i></div>
-            <div class="prod-info"><div class="prod-name">Keset Patchwork Warna-warni</div><div class="prod-price">Rp55.000</div><div class="prod-sold">oleh Rumah Kain Nusantara · 73 terjual</div></div>
-            <button style="background:var(--dk);color:var(--beige);border:none;border-radius:7px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;" onclick="doToast('checkout-toast','Menuju checkout...')">Beli</button>
-          </div>
-          <div class="prod-item">
-            <div class="prod-thumb pt1"><i class="ti ti-heart" style="font-size:20px;color:#3B6D11;" aria-hidden="true"></i></div>
-            <div class="prod-info"><div class="prod-name">Dompet Sutra Mini Eksklusif</div><div class="prod-price">Rp120.000</div><div class="prod-sold">oleh Atelier Kain Asri · 19 terjual</div></div>
-            <button style="background:var(--dk);color:var(--beige);border:none;border-radius:7px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;" onclick="doToast('checkout-toast','Menuju checkout...')">Beli</button>
-          </div>
-          <div id="checkout-toast" class="toast" style="margin-top:4px;">
-            <i class="ti ti-shopping-cart" aria-hidden="true"></i> Produk ditambahkan ke keranjang!
+          @empty
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Belum ada produk dari Upcycler.</div>
+          @endforelse
+          
+          <div style="margin-top:16px;text-align:center;">
+             <a href="{{ route('gallery') }}" style="font-size:12px;color:var(--moss);font-weight:700;text-decoration:none;">Lihat Semua di Galeri →</a>
           </div>
         </div>
       </div>
@@ -458,22 +494,49 @@
           <div class="card">
             <div class="card-title"><i class="ti ti-user" aria-hidden="true"></i> Data Diri</div>
             <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--beige2);">
-              <div style="width:56px;height:56px;border-radius:50%;background:var(--rosy);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;">TH</div>
-              <div><div style="font-size:16px;font-weight:700;color:var(--dk);">Theo Hermawan</div><div style="font-size:12px;color:var(--muted);">Kontributor Aktif · Bergabung Mar 2025</div></div>
+              <div style="width:56px;height:56px;border-radius:50%;background:var(--rosy);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
+              <div><div style="font-size:16px;font-weight:700;color:var(--dk);">{{ $user->name }}</div><div style="font-size:12px;color:var(--muted);">Kontributor Aktif · Bergabung {{ $user->created_at->format('M Y') }}</div></div>
             </div>
-            <div class="fg"><label class="flabel">Email</label><input class="finput" value="theo.hermawan@gmail.com" /></div>
-            <div class="fg"><label class="flabel">Nomor WhatsApp</label><input class="finput" value="0812-3456-7890" /></div>
-            <div class="fg"><label class="flabel">Kota / Kecamatan</label><input class="finput" value="Kec. Adiwerna, Kab. Tegal" /></div>
-            <button class="post-btn" onclick="doToast('profile-toast','Profil berhasil disimpan!')"><i class="ti ti-device-floppy" aria-hidden="true"></i> Simpan Perubahan</button>
-            <div id="profile-toast" class="toast" style="margin-top:8px;"><i class="ti ti-check" aria-hidden="true"></i> Profil berhasil disimpan!</div>
+            
+            <form action="{{ route('contributor.profile.update') }}" method="POST">
+              @csrf
+              <div class="fg">
+                <label class="flabel">Nama Lengkap</label>
+                <input type="text" name="name" class="finput" value="{{ $user->name }}" required />
+              </div>
+              <div class="fg">
+                <label class="flabel">Email (Login)</label>
+                <input class="finput" value="{{ $user->email }}" readonly style="background-color:#EAF3DE; opacity: 0.8;" />
+              </div>
+              <div class="fg">
+                <label class="flabel">Nomor WhatsApp</label>
+                <input type="text" name="whatsapp" class="finput" value="{{ $user->whatsapp }}" placeholder="Mulai dengan 08..." />
+              </div>
+              
+              <div style="margin-top:16px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--dk);">🔒 Ubah Password (Opsional)</div>
+              <div class="fg">
+                <label class="flabel">Password Saat Ini</label>
+                <input type="password" name="current_password" class="finput" placeholder="Masukkan jika ingin ganti password" />
+              </div>
+              <div class="fg">
+                <label class="flabel">Password Baru</label>
+                <input type="password" name="new_password" class="finput" placeholder="Minimal 8 karakter" />
+              </div>
+              <div class="fg">
+                <label class="flabel">Konfirmasi Password Baru</label>
+                <input type="password" name="new_password_confirmation" class="finput" placeholder="Ketik ulang password baru" />
+              </div>
+              
+              <button type="submit" class="post-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i> Simpan Perubahan</button>
+            </form>
           </div>
           <div style="display:flex;flex-direction:column;gap:1rem;">
             <div class="gi-banner">
               <div class="gi-top"><div class="gi-icon"><i class="ti ti-leaf" style="font-size:18px;color:var(--moss);" aria-hidden="true"></i></div><div><div class="gi-label">Rekam Jejak Lingkungan</div><div class="gi-name">Green Identity Score</div></div></div>
               <div class="gi-metrics" style="grid-template-columns:1fr 1fr;">
-                <div class="gi-m"><div class="gi-m-val">13.3</div><div class="gi-m-sub">Kg Diselamatkan</div></div>
-                <div class="gi-m"><div class="gi-m-val">5</div><div class="gi-m-sub">Postingan Total</div></div>
-                <div class="gi-m"><div class="gi-m-val gold">13</div><div class="gi-m-sub">Total Koin</div></div>
+                <div class="gi-m"><div class="gi-m-val">{{ number_format($stats['total_berat'], 1) }}</div><div class="gi-m-sub">Kg Diselamatkan</div></div>
+                <div class="gi-m"><div class="gi-m-val">{{ $stats['postingan_aktif'] }}</div><div class="gi-m-sub">Postingan Total</div></div>
+                <div class="gi-m"><div class="gi-m-val gold">{{ $stats['total_koin'] }}</div><div class="gi-m-sub">Total Koin</div></div>
                 <div class="gi-m"><div class="gi-m-val">4.9</div><div class="gi-m-sub">Rating</div></div>
               </div>
             </div>
@@ -496,9 +559,33 @@
   </div>
 </div>
 
-<script>
-var koin = 13;
+{{-- MAP PICKER MODAL (untuk contributor pin lokasi saat upload) --}}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div id="pickerOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border:2px solid #0A3323;border-radius:20px;box-shadow:6px 6px 0 #0A3323;width:100%;max-width:640px;overflow:hidden;">
+    <div style="background:#0A3323;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'DM Serif Display',serif;font-size:17px;color:#F7F4D5;">📍 Pin Lokasi Penjemputan</div>
+      <button onclick="closePicker()" style="background:none;border:none;color:#9FE1CB;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div style="padding:12px 16px;background:#F7F4D5;font-size:12px;color:#3B6D11;">
+      <i class="ti ti-info-circle"></i> Klik di peta untuk menentukan titik lokasi penjemputan kain.
+      Gunakan tombol <strong>Lokasimu</strong> untuk deteksi otomatis.
+    </div>
+    <div id="pickerMap" style="height:360px;width:100%;"></div>
+    <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div id="pickerAddr" style="font-size:12px;color:#666;flex:1;">Belum ada titik dipilih.</div>
+      <button onclick="useMyLoc()" style="padding:9px 16px;border-radius:8px;background:#105666;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+        📍 Lokasimu
+      </button>
+      <button onclick="confirmPicker()" style="padding:9px 20px;border-radius:8px;background:#839958;color:#0A3323;border:2px solid #0A3323;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;">
+        ✅ Konfirmasi Lokasi
+      </button>
+    </div>
+  </div>
+</div>
 
+<script>
 function showSec(id) {
   document.querySelectorAll('.page-sec').forEach(function(el){el.classList.remove('on');});
   document.querySelectorAll('.snav-item').forEach(function(el){el.classList.remove('on');});
@@ -509,35 +596,86 @@ function showSec(id) {
   }
 }
 
-function setMap() {
-  document.getElementById('map-txt').textContent = 'Lokasi dipilih: Kec. Adiwerna, Tegal';
-  document.getElementById('inp-lat').value = '-7.1575';
-  document.getElementById('inp-lng').value = '109.9152';
+function setMap() { openPickerModal(); } // backward compat
+
+function previewFoto(input) {
+  if (input.files && input.files[0]) {
+    var file = input.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('foto-img').src = e.target.result;
+      document.getElementById('foto-name').textContent = file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+      document.getElementById('foto-preview').style.display = 'block';
+      document.getElementById('foto-label').textContent = '✅ Foto dipilih: ' + file.name;
+      document.getElementById('foto-drop').style.borderColor = '#839958';
+      document.getElementById('foto-drop').style.background = '#EAF3DE';
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
-function doPost() {
-  var judul = document.getElementById('inp-judul').value;
-  var berat = document.getElementById('inp-berat').value;
-  var jenis = document.getElementById('inp-jenis').value;
-  if(!judul || !berat || !jenis) {
-    document.getElementById('inp-judul').style.borderColor = '#E24B4A';
-    setTimeout(function(){document.getElementById('inp-judul').style.borderColor='';},2000);
-    return;
-  }
-  koin += 2;
-  document.getElementById('koin-display').textContent = koin;
-  var rp = (koin * 2500).toLocaleString('id-ID');
-  document.getElementById('rp-display').textContent = rp;
-  var prog = Math.min(Math.round(koin/20*100), 100);
-  document.getElementById('prog-fill').style.width = prog+'%';
-  document.querySelector('.koin-pill').innerHTML = '<i class="ti ti-star" aria-hidden="true"></i> '+koin+' Koin';
-  var so = document.getElementById('success-post');
-  so.classList.add('on');
-  document.getElementById('inp-judul').value='';
-  document.getElementById('inp-berat').value='';
-  document.getElementById('inp-desc').value='';
-  setTimeout(function(){so.classList.remove('on');},4000);
+let pickerMap = null, pickerMarker = null, pickerLat = null, pickerLng = null;
+
+function openPickerModal() {
+  document.getElementById('pickerOverlay').style.display = 'flex';
+  setTimeout(function() {
+    if (!pickerMap) {
+      pickerMap = L.map('pickerMap').setView([-2.548926, 118.0148634], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom:19, attribution:'© OpenStreetMap'
+      }).addTo(pickerMap);
+      pickerMap.on('click', function(e) {
+        pickerLat = e.latlng.lat.toFixed(6);
+        pickerLng = e.latlng.lng.toFixed(6);
+        if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+        pickerMarker = L.marker([pickerLat, pickerLng]).addTo(pickerMap);
+        document.getElementById('pickerAddr').textContent = '📍 Lat: ' + pickerLat + ', Lng: ' + pickerLng;
+        // Reverse geocode
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+pickerLat+'&lon='+pickerLng)
+          .then(r => r.json())
+          .then(d => {
+            const addr = d.display_name || '';
+            document.getElementById('pickerAddr').textContent = '📍 ' + addr;
+            if (document.getElementById('inp-alamat')) {
+              document.getElementById('inp-alamat').value = addr.split(',').slice(0,4).join(',').trim();
+            }
+          }).catch(() => {});
+      });
+    } else {
+      pickerMap.invalidateSize();
+    }
+  }, 200);
 }
+
+function useMyLoc() {
+  if (!pickerMap) return;
+  pickerMap.locate({ setView:true, maxZoom:15 });
+  pickerMap.once('locationfound', function(e) {
+    pickerLat = e.latlng.lat.toFixed(6);
+    pickerLng = e.latlng.lng.toFixed(6);
+    if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+    pickerMarker = L.marker([pickerLat, pickerLng]).addTo(pickerMap);
+    document.getElementById('pickerAddr').textContent = '📍 Lat: ' + pickerLat + ', Lng: ' + pickerLng;
+  });
+  pickerMap.once('locationerror', function() {
+    alert('GPS tidak tersedia. Klik manual di peta.');
+  });
+}
+
+function confirmPicker() {
+  if (!pickerLat || !pickerLng) { alert('Belum ada titik dipilih. Klik dulu di peta.'); return; }
+  document.getElementById('inp-lat').value  = pickerLat;
+  document.getElementById('inp-lng').value  = pickerLng;
+  document.getElementById('map-txt').textContent = '✅ Lokasi berhasil dipilih!';
+  document.getElementById('map-box-btn').style.borderColor = '#839958';
+  closePicker();
+}
+
+function closePicker() {
+  document.getElementById('pickerOverlay').style.display = 'none';
+}
+
+// doPost() is removed because we use real Laravel form submission.
 
 function selM(m) {
   document.getElementById('mb-bank').classList.toggle('on', m==='bank');

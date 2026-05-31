@@ -15,17 +15,21 @@ class Textile extends Model
         'fabric_type',
         'description',
         'weight',
+        'address',
+        'image',
         'latitude',
         'longitude',
         'status',
         'claimed_by',
+        'claimed_at',
         'product_image',
     ];
  
     protected $casts = [
-        'weight'    => 'decimal:2',
-        'latitude'  => 'decimal:8',
-        'longitude' => 'decimal:8',
+        'weight'     => 'decimal:2',
+        'latitude'   => 'decimal:8',
+        'longitude'  => 'decimal:8',
+        'claimed_at' => 'datetime',
     ];
  
     // Relasi ke pemilik limbah (contributor)
@@ -38,6 +42,18 @@ class Textile extends Model
     public function upcycler()
     {
         return $this->belongsTo(User::class, 'claimed_by');
+    }
+
+    // Relasi ke klaim
+    public function wasteClaim()
+    {
+        return $this->hasOne(WasteClaim::class);
+    }
+
+    // Relasi ke produk
+    public function product()
+    {
+        return $this->hasOne(Product::class);
     }
  
     // Scope untuk filter status

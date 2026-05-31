@@ -321,8 +321,8 @@
   <nav class="topbar">
     <a href="{{ route('landing') }}" class="topbar-logo">Upcycle<span>Match</span></a>
     <div class="tab-group">
-      <button id="tab-login"    class="tab-btn active" type="button" onclick="switchTo('login')">Masuk</button>
-      <button id="tab-register" class="tab-btn"        type="button" onclick="switchTo('register')">Daftar</button>
+      <button id="tab-login" class="tab-btn active" type="button" onclick="switchTo('login')">Masuk</button>
+      <a href="{{ route('register') }}" class="tab-btn" style="text-decoration:none;">Daftar</a>
     </div>
     <span class="topbar-hint">Platform Limbah Tekstil Indonesia</span>
   </nav>
@@ -391,9 +391,16 @@
             <div><div class="as-title">Login berhasil!</div><div class="as-sub">Mengarahkan ke dashboard sesuai peranmu…</div></div>
           </div>
 
+          @if(session('success'))
+          <div class="alert-success show" style="margin-bottom:14px;">
+            <i class="ti ti-circle-check"></i>
+            <div><div class="as-title">{{ session('success') }}</div></div>
+          </div>
+          @endif
+
           <div class="form-head">
             <div class="form-title">Masuk ke akun</div>
-            <div class="form-sub">Belum punya akun? <a onclick="switchTo('register')">Daftar sekarang</a></div>
+            <div class="form-sub">Belum punya akun? <a href="{{ route('register') }}">Daftar sekarang &rarr;</a></div>
           </div>
 
           <form action="{{ route('login.store') }}" method="POST" id="form-login">

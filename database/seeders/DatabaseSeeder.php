@@ -46,22 +46,24 @@ class DatabaseSeeder extends Seeder
         Textile::create([
             'user_id'     => $budi->id,
             'title'       => 'Celana Jeans Lama & Potongan Denim',
-            'fabric_type' => 'Denim',
+            'fabric_type' => 'denim',
             'description' => 'Kumpulan 5 celana jeans lama sudah tidak terpakai, kondisi masih bagus hanya agak pudar. Cocok dijadikan tas, dompet, atau aksesori.',
             'weight'      => 3.50,
+            'address'     => 'Jl. Kebayoran Lama No. 12, Jakarta Selatan',
             'latitude'    => -6.2607,
             'longitude'   => 106.8017,
             'status'      => 'available',
             'claimed_by'  => null,
         ]);
 
-        // 2. Limbah Katun di Bandung - SUDAH DIKLAIM oleh Taylor
+        // 2. Limbah Katun di Bandung - SUDAH DIKLAIM
         Textile::create([
             'user_id'     => $budi->id,
             'title'       => 'Sisa Kain Perca Katun Garmen',
-            'fabric_type' => 'Katun',
-            'description' => 'Sisa produksi garmen rumahan, berbagai warna dan motif. Berat total sekitar 5 kg. Bisa untuk membuat patchwork quilt atau boneka.',
+            'fabric_type' => 'katun',
+            'description' => 'Sisa produksi garmen rumahan, berbagai warna dan motif. Berat total sekitar 5 kg.',
             'weight'      => 5.00,
+            'address'     => 'Jl. Cibaduyut No. 8, Bandung',
             'latitude'    => -6.9175,
             'longitude'   => 107.6191,
             'status'      => 'claimed',
@@ -72,9 +74,10 @@ class DatabaseSeeder extends Seeder
         Textile::create([
             'user_id'     => $budi->id,
             'title'       => 'Kain Sutra Batik Sisa Pembatik',
-            'fabric_type' => 'Sutra',
-            'description' => 'Sisa kain sutra dari pembatik tradisional Yogyakarta. Motif batik kawung dan parang. Sangat cocok untuk karya seni bernilai tinggi.',
+            'fabric_type' => 'sutra',
+            'description' => 'Sisa kain sutra dari pembatik tradisional Yogyakarta. Motif batik kawung dan parang.',
             'weight'      => 1.80,
+            'address'     => 'Jl. Malioboro No. 54, Yogyakarta',
             'latitude'    => -7.7956,
             'longitude'   => 110.3695,
             'status'      => 'processing',
@@ -85,27 +88,29 @@ class DatabaseSeeder extends Seeder
         Textile::create([
             'user_id'     => $budi->id,
             'title'       => 'Pakaian Bekas Polyester Campuran',
-            'fabric_type' => 'Polyester',
-            'description' => 'Kumpulan baju olahraga dan jaket polyester tidak terpakai. Total 8 potong. Bisa didaur ulang menjadi tas gym atau tote bag.',
+            'fabric_type' => 'polyester',
+            'description' => 'Kumpulan baju olahraga dan jaket polyester tidak terpakai.',
             'weight'      => 4.20,
+            'address'     => 'Jl. Raya Darmo No. 15, Surabaya',
             'latitude'    => -7.2575,
             'longitude'   => 112.7521,
             'status'      => 'available',
             'claimed_by'  => null,
         ]);
 
-        // 5. Limbah Denim di Medan - COMPLETED dengan foto produk
+        // 5. Limbah Denim di Medan - COMPLETED
         Textile::create([
             'user_id'      => $budi->id,
             'title'        => 'Jeans & Kemeja Denim Bekas',
-            'fabric_type'  => 'Denim',
-            'description'  => 'Kemeja denim dan jeans bekas kondisi layak pakai, ukuran M-XL. Bahan masih kuat dan tebal.',
+            'fabric_type'  => 'denim',
+            'description'  => 'Kemeja denim dan jeans bekas kondisi layak pakai.',
             'weight'       => 6.00,
+            'address'      => 'Jl. Pemuda No. 22, Medan',
             'latitude'     => 3.5952,
             'longitude'    => 98.6722,
             'status'       => 'completed',
             'claimed_by'   => $taylor->id,
-            'product_image' => null, // Kosongkan karena tidak ada file sungguhan
+            'product_image'=> null,
         ]);
 
         $this->command->info('✅ Seeder berhasil! Data berikut telah dibuat:');

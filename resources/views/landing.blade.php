@@ -220,8 +220,24 @@
   <nav class="nav">
     <a href="{{ route('landing') }}" class="nav-logo">Upcycle<span>Match</span></a>
     <div class="nav-right">
-      <a href="{{ route('login') }}" class="btn btn-outline">Masuk</a>
-      <a href="{{ route('register') }}" class="btn btn-solid">Daftar</a>
+      @auth
+        @php
+          $dashRoute = match(auth()->user()->role) {
+            'admin'       => route('admin.dashboard'),
+            'upcycler'    => route('upcycler.dashboard'),
+            'contributor' => route('contributor.dashboard'),
+            default       => route('landing'),
+          };
+        @endphp
+        <a href="{{ $dashRoute }}" class="btn btn-solid">Dashboard Saya</a>
+        <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+            @csrf
+            <button type="submit" class="btn btn-outline">Keluar</button>
+        </form>
+      @else
+        <a href="{{ route('login') }}" class="btn btn-outline">Masuk</a>
+        <a href="{{ route('register') }}" class="btn btn-solid">Daftar</a>
+      @endauth
     </div>
   </nav>
 
@@ -231,9 +247,15 @@
       <h1 class="hero-title">Limbah Kainmu<br>Jadi Karya <em>Bernilai</em></h1>
       <p class="hero-sub">Platform terintegrasi yang menghubungkan limbah kain masyarakat dengan pengrajin lokal dan UMKM penjahit kreatif. Bersama kurangi sampah tekstil nasional.</p>
       <div class="hero-actions">
+        @auth
+        <a href="{{ $dashRoute }}" class="btn btn-solid" style="padding:12px 24px; border-radius:var(--radius);">
+          Buka Dashboard <i class="ti ti-arrow-right"></i>
+        </a>
+        @else
         <a href="{{ route('register') }}" class="btn btn-solid" style="padding:12px 24px; border-radius:var(--radius);">
           Mulai Sekarang <i class="ti ti-arrow-right"></i>
         </a>
+        @endauth
       </div>
     </div>
     

@@ -20,17 +20,17 @@
             <span class="role-chip admin">Admin Panel</span>
         @elseif(auth()->user()->role === 'upcycler' || auth()->user()->role === 'penjahit')
             <div class="dash-tabs">
-                <a href="{{ route('penjahit.dashboard') }}" class="dtab {{ request()->routeIs('penjahit.dashboard') ? 'a' : '' }}">Beranda</a>
-                <a href="#" class="dtab">Peta Limbah</a>
-                <a href="#" class="dtab">Klaim Saya</a>
-                <a href="#" class="dtab">Upload Karya</a>
+                <a href="{{ route('upcycler.dashboard') }}" class="dtab {{ request()->routeIs('upcycler.dashboard') ? 'a' : '' }}">Beranda</a>
+                <a href="{{ route('upcycler.exploration-map') }}" class="dtab {{ request()->routeIs('upcycler.exploration-map') ? 'a' : '' }}">🗺 Peta Limbah</a>
+                <a href="{{ route('upcycler.production') }}" class="dtab {{ request()->routeIs('upcycler.production') ? 'a' : '' }}">⚙️ Produksi</a>
+                <a href="{{ route('gallery') }}" class="dtab">🎨 Galeri</a>
             </div>
         @else
-            {{-- TABS KHUSUS KONTRIBUTOR (Sudah disinkronkan jalurnya) --}}
+            {{-- TABS KHUSUS KONTRIBUTOR --}}
             <div class="dash-tabs">
                 <a href="{{ route('contributor.dashboard') }}" class="dtab {{ request()->routeIs('contributor.dashboard') ? 'a' : '' }}">Beranda</a>
-                <a href="#" class="dtab">Postingan Saya</a>
-                <a href="/upload-limbah" class="dtab">+ Post Limbah</a>
+                <a href="{{ route('contributor.upload') }}" class="dtab {{ request()->routeIs('contributor.upload') ? 'a' : '' }}">+ Post Limbah</a>
+                <a href="{{ route('gallery') }}" class="dtab">🎨 Galeri</a>
             </div>
         @endif
     </div>
@@ -51,7 +51,7 @@
                 @if(auth()->user()->role === 'contributor')
                     <a href="{{ route('contributor.dashboard') }}" class="nd-item">📊 Dashboard</a>
                 @elseif(auth()->user()->role === 'upcycler' || auth()->user()->role === 'penjahit')
-                    <a href="{{ route('penjahit.dashboard') }}" class="nd-item">📊 Dashboard</a>
+                    <a href="{{ route('upcycler.dashboard') }}" class="nd-item">📊 Dashboard</a>
                 @endif
                 
                 <div class="nd-divider"></div>
@@ -76,14 +76,14 @@
     @if(auth()->user()->role === 'admin')
     <aside class="dash-sidebar">
         <nav class="sidebar-nav">
-            <a href="#" class="sitem a"><span>🏠</span> Beranda</a>
-            <a href="#" class="sitem"><span>📊</span> Analytics</a>
-            <a href="#" class="sitem"><span>👥</span> Verifikasi User</a>
+            <a href="{{ route('admin.dashboard') }}" class="sitem {{ request()->routeIs('admin.dashboard') ? 'a' : '' }}"><span>🏠</span> Beranda</a>
+            <a href="{{ route('admin.analytics') }}" class="sitem {{ request()->routeIs('admin.analytics') ? 'a' : '' }}"><span>📊</span> Analytics</a>
+            <a href="{{ route('admin.verification') }}" class="sitem {{ request()->routeIs('admin.verification') ? 'a' : '' }}"><span>👥</span> Verifikasi Upcycler</a>
             <div class="sdiv"></div>
-            <a href="#" class="sitem"><span>🗃</span> Data Limbah</a>
-            <a href="#" class="sitem"><span>🖼</span> Galeri Karya</a>
+            <a href="{{ route('admin.limbah') }}" class="sitem {{ request()->routeIs('admin.limbah') ? 'a' : '' }}"><span>🗃</span> Data Limbah</a>
+            <a href="{{ route('admin.galeri') }}" class="sitem {{ request()->routeIs('admin.galeri') ? 'a' : '' }}"><span>🖼</span> Galeri Karya</a>
             <div class="sdiv"></div>
-            <a href="#" class="sitem"><span>📥</span> Export Report</a>
+            <a href="{{ route('admin.report') }}" class="sitem {{ request()->routeIs('admin.report') ? 'a' : '' }}"><span>📥</span> Export Report</a>
         </nav>
     </aside>
     @endif

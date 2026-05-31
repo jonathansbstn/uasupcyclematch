@@ -2,38 +2,35 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\UpcycleController;
-use App\Http\Controllers\Api\AdminController;
-use App\Http\Controllers\Api\FabricDonationController;
+use App\Http\Controllers\Api\WasteMapController;
+use App\Http\Controllers\Api\ClaimApiController;
+use App\Http\Controllers\Api\ProductionApiController;
 
 /*
 |--------------------------------------------------------------------------
-| 🔓 ENDPOINT PUBLIK
+| PUBLIC ENDPOINTS
 |--------------------------------------------------------------------------
 */
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::get('/fabrics/dictionary', [FabricDonationController::class, 'indexKamusKain']);
+
+// Waste Map — diakses dari Leaflet.js (butuh auth session web)
+Route::get('/waste-map', [WasteMapController::class, 'index'])->name('api.waste-map');
+
+// Analytics publik
+Route::get('/analytics', [ProductionApiController::class, 'analytics'])->name('api.analytics');
 
 /*
 |--------------------------------------------------------------------------
-| 🔒 ENDPOINT TERPROTEKSI TOKEN JWT
+| PROTECTED ENDPOINTS (auth:sanctum via session)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth:api')->group(function () {
-    // Autentikasi Internal
-    Route::get('/auth/profile', [AuthController::class, 'profile']);
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
+Route::middleware('auth')->group(function () {
+    // Claim
+    Route::post('/claim', [ClaimApiController::class, 'store'])->name('api.claim');
 
-    // Fitur Kontributor
-    Route::post('/contributor/donate', [FabricDonationController::class, 'storeDonation']);
+    // Production workflow
+    Route::post('/start-production', [ClaimApiController::class, 'startProduction'])->name('api.start-production');
+    Route::post('/finish-production', [ClaimApiController::class, 'finishProduction'])->name('api.finish-production');
 
-    // Fitur Mitra Penjahit (Upcycler)
-    Route::get('/upcycler/materials', [UpcycleController::class, 'availableDonations']);
-    Route::post('/upcycler/claim/{id}', [UpcycleController::class, 'claimDonation']);
-    Route::post('/upcycler/gallery/store', [UpcycleController::class, 'storeProduct']);
-
-    // Fitur Dashboard Admin
-    Route::get('/admin/summary', [AdminController::class, 'dashboardSummary']);
+    // Upload product
+    Route::post('/upload-product', [ProductionApiController::class, 'uploadProduct'])->name('api.upload-product');
 });

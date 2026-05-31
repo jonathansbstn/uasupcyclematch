@@ -33,13 +33,13 @@ class LoginController extends Controller
             Auth::login($user);
             
             // Redirect sesuai role dari akun Google yang terdaftar
-            if ($user->role === 'kontributor') {
-                return redirect()->route('kontributor.dashboard')->with('success', 'Selamat datang, Kontributor! 🌱');
-            } elseif ($user->role === 'penjahit') {
-                return redirect()->route('penjahit.dashboard')->with('success', 'Selamat datang, Mitra Penjahit! ✂️');
+            if ($user->role === 'contributor') {
+                return redirect()->route('contributor.dashboard')->with('success', 'Selamat datang, Kontributor! 🌱');
+            } elseif ($user->role === 'upcycler') {
+                return redirect()->route('upcycler.dashboard')->with('success', 'Selamat datang, Mitra Penjahit! ✂️');
             }
             
-            return redirect()->route('dashboard');
+            return redirect()->route('landing');
             
         } catch (\Exception $e) {
             return redirect()->route('login')->withErrors(['email' => 'Gagal login menggunakan Google.']);
@@ -63,14 +63,14 @@ class LoginController extends Controller
             $user = Auth::user();
 
             // Cek role dan arahkan ke halaman khusus
-            if ($user->role === 'kontributor') {
-                return redirect()->route('kontributor.dashboard')->with('success', 'Selamat datang kembali, Kontributor! 🌱');
-            } elseif ($user->role === 'penjahit') {
-                return redirect()->route('penjahit.dashboard')->with('success', 'Selamat datang kembali, Mitra Penjahit! ✂️');
+            if ($user->role === 'contributor') {
+                return redirect()->route('contributor.dashboard')->with('success', 'Selamat datang kembali, Kontributor! 🌱');
+            } elseif ($user->role === 'upcycler') {
+                return redirect()->route('upcycler.dashboard')->with('success', 'Selamat datang kembali, Mitra Penjahit! ✂️');
             }
 
             // Default jika ada role lain
-            return redirect()->route('dashboard');
+            return redirect()->route('landing');
         }
 
         // PERBAIKAN: Membetulkan posisi kurung kurawal penutup fungsi yang sempat terbalik

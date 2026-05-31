@@ -42,8 +42,7 @@ class AuthController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        // Mengamankan password menggunakan Hash bawaan Laravel terbaru
-        $user = User::create([
+        User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
             'whatsapp' => $data['whatsapp'] ?? null,
@@ -52,14 +51,9 @@ class AuthController extends Controller
             'koin'     => 0,
         ]);
 
-        Auth::login($user);
-
-        // 3. FIX: Redirect register juga harus adil membedakan role pendaftar!
-        return match($user->role) {
-            'upcycler'    => redirect()->route('upcycler.dashboard'),
-            'contributor' => redirect()->route('contributor.dashboard'),
-            default       => redirect('/'),
-        };
+        // Jangan auto-login — arahkan ke halaman login dengan pesan sukses
+        return redirect()->route('login')
+            ->with('success', 'Akun berhasil dibuat! Silakan masuk dengan email dan kata sandi Anda.');
     }
 
     // 4. TAMBAHAN FITUR LOGOUT: Memindahkan fungsi logout dari web.php ke controller
