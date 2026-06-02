@@ -12,13 +12,13 @@ class ClaimApiController extends Controller
     public function __construct(protected ClaimService $claimService) {}
 
     /**
-     * POST /api/claim
+     * POST /api/claim  (legacy)
      */
     public function store(Request $request): JsonResponse
     {
         $request->validate(['textile_id' => 'required|integer|exists:textiles,id']);
 
-        $result = $this->claimService->claim($request->textile_id, auth()->id());
+        $result = $this->claimService->claim($request->textile_id, auth()->id() ?? auth('api')->id());
 
         if (!$result['success']) {
             return response()->json(['success' => false, 'message' => $result['message']], 422);
@@ -28,8 +28,8 @@ class ClaimApiController extends Controller
         $owner   = $textile->owner;
 
         return response()->json([
-            'success' => true,
-            'message' => $result['message'],
+            'success'  => true,
+            'message'  => $result['message'],
             'whatsapp' => [
                 'number'  => $owner?->whatsapp,
                 'name'    => $owner?->name,
@@ -39,6 +39,32 @@ class ClaimApiController extends Controller
                     '?text=' . urlencode(
                         "Halo, saya dari UpcycleMatch.\n\nSaya telah mengklaim limbah kain:\n[{$textile->title}]\n\nSaya ingin melakukan koordinasi penjemputan.\n\nTerima kasih."
                     ),
+            ],
+        ]);
+    }
+
+    /**
+     * POST /api/v1/textiles/{textile}/claim  (v1 JWT, route-model-binding)
+     */
+    public function claimViaRoute(\App\Models\Textile $textile): JsonResponse
+    {
+        $userId = auth('api')->id();
+        $result = $this->claimService->claim($textile->id, $userId);
+
+        if (!$result['success']) {
+            return response()->json(['success' => false, 'message' => $result['message']], 422);
+        }
+
+        $t     = $result['textile'];
+        $owner = $t->owner;
+
+        return response()->json([
+            'success'  => true,
+            'message'  => $result['message'],
+            'whatsapp' => [
+                'number'  => $owner?->whatsapp,
+                'name'    => $owner?->name,
+                'url'     => 'https://wa.me/' . preg_replace('/\D/', '', $owner?->whatsapp ?? ''),
             ],
         ]);
     }

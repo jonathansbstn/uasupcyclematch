@@ -42,12 +42,14 @@
 @php
     $total    = $upcyclers->total();
     $verified = $upcyclers->filter(fn($u) => $u->is_verified)->count();
-    $pending  = $upcyclers->filter(fn($u) => !$u->is_verified)->count();
+    $pending  = $upcyclers->filter(fn($u) => !$u->is_verified && ($u->upcyclerProfile->verification_status ?? 'pending') !== 'rejected')->count();
+    $rejected = $upcyclers->filter(fn($u) => !$u->is_verified && ($u->upcyclerProfile->verification_status ?? 'pending') === 'rejected')->count();
 @endphp
-<div class="stats-row">
+<div class="stats-row" style="grid-template-columns:repeat(4,1fr);">
     <div class="stat-box"><div class="stat-num">{{ $total }}</div><div class="stat-lbl">Total Upcycler</div></div>
     <div class="stat-box"><div class="stat-num" style="color:#22c55e;">{{ $verified }}</div><div class="stat-lbl">Terverifikasi</div></div>
     <div class="stat-box"><div class="stat-num" style="color:#eab308;">{{ $pending }}</div><div class="stat-lbl">Menunggu</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:#ef4444;">{{ $rejected }}</div><div class="stat-lbl">Ditolak</div></div>
 </div>
 
 <div class="card" style="padding:0;overflow:hidden;">
@@ -78,18 +80,24 @@
             <td>{{ $user->whatsapp ?: '—' }}</td>
             <td>{{ $user->created_at->format('d M Y') }}</td>
             <td>
+                @php $vStat = $user->upcyclerProfile->verification_status ?? 'pending'; @endphp
                 @if($user->is_verified)
                     <span class="status-pill sp-verified">✅ Terverifikasi</span>
+                @elseif($vStat === 'rejected')
+                    <span class="status-pill sp-rejected">❌ Ditolak</span>
+                    <div style="font-size:10px;color:#ef4444;margin-top:4px;max-width:140px;">{{ $user->upcyclerProfile->rejection_reason ?? '' }}</div>
                 @else
                     <span class="status-pill sp-pending">⏳ Menunggu</span>
                 @endif
             </td>
             <td>
-                @if(!$user->is_verified)
+                @if($user->is_verified)
+                <span class="verified-badge">✅ Sudah Diverifikasi</span>
+                @elseif($vStat === 'rejected')
+                <span style="font-size:12px;color:#991b1b;font-weight:700;">❌ Akun Ditolak</span>
+                @else
                 <button class="btn-verify" onclick="confirmVerify({{ $user->id }}, '{{ $user->name }}')">✅ Verifikasi</button>
                 <button class="btn-reject" onclick="confirmReject({{ $user->id }}, '{{ $user->name }}')">❌ Tolak</button>
-                @else
-                <span class="verified-badge">✅ Sudah Diverifikasi</span>
                 @endif
             </td>
         </tr>

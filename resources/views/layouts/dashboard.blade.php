@@ -80,14 +80,36 @@
 {{-- MAIN LAYOUT STRUCTURE --}}
 <div class="dash-layout">
     @if(auth()->user()->role === 'admin')
+    @php
+        $pendingWd = \App\Models\KoinWithdrawal::where('status','pending')->count();
+        $pendingVerif = \App\Models\User::where('role','upcycler')
+                        ->where('is_verified', false)
+                        ->whereDoesntHave('upcyclerProfile', fn($q) => $q->where('verification_status','rejected'))
+                        ->count();
+        $pendingGaleri = \App\Models\Product::where('status','pending')->count();
+    @endphp
     <aside class="dash-sidebar">
         <nav class="sidebar-nav">
             <a href="{{ route('admin.dashboard') }}" class="sitem {{ request()->routeIs('admin.dashboard') ? 'a' : '' }}"><span>🏠</span> Beranda</a>
             <a href="{{ route('admin.analytics') }}" class="sitem {{ request()->routeIs('admin.analytics') ? 'a' : '' }}"><span>📊</span> Analytics</a>
-            <a href="{{ route('admin.verification') }}" class="sitem {{ request()->routeIs('admin.verification') ? 'a' : '' }}"><span>👥</span> Verifikasi Upcycler</a>
+            <div class="sdiv"></div>
+            
+            <a href="{{ route('admin.verification') }}" class="sitem {{ request()->routeIs('admin.verification') ? 'a' : '' }}" style="justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;"><span>👥</span> Verifikasi Upcycler</div>
+                @if($pendingVerif > 0)<div style="background:#ef4444;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px;line-height:1;">{{ $pendingVerif }}</div>@endif
+            </a>
+            <a href="{{ route('admin.withdrawals') }}" class="sitem {{ request()->routeIs('admin.withdrawals') ? 'a' : '' }}" style="justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;"><span>💰</span> Pencairan Koin</div>
+                @if($pendingWd > 0)<div style="background:#ef4444;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px;line-height:1;">{{ $pendingWd }}</div>@endif
+            </a>
+            
             <div class="sdiv"></div>
             <a href="{{ route('admin.limbah') }}" class="sitem {{ request()->routeIs('admin.limbah') ? 'a' : '' }}"><span>🗃</span> Data Limbah</a>
-            <a href="{{ route('admin.galeri') }}" class="sitem {{ request()->routeIs('admin.galeri') ? 'a' : '' }}"><span>🖼</span> Galeri Karya</a>
+            <a href="{{ route('admin.galeri') }}" class="sitem {{ request()->routeIs('admin.galeri') ? 'a' : '' }}" style="justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;"><span>🖼</span> Galeri Karya</div>
+                @if($pendingGaleri > 0)<div style="background:#F59E0B;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px;line-height:1;">{{ $pendingGaleri }}</div>@endif
+            </a>
+            
             <div class="sdiv"></div>
             <a href="{{ route('admin.report') }}" class="sitem {{ request()->routeIs('admin.report') ? 'a' : '' }}"><span>📥</span> Export Report</a>
         </nav>

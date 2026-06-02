@@ -14,7 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Custom middleware 'role' milikmu tetap aman terjaga di sini
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class
+            'role'    => \App\Http\Middleware\RoleMiddleware::class,
+            'api.key' => \App\Http\Middleware\CheckApiKey::class,
+            'jwt.auth'=> \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

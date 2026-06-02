@@ -7,12 +7,35 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
 {
     /**
      * Fitur Registrasi Akun Baru via API
      */
+    #[OA\Post(
+        path: "/api/v1/auth/register",
+        summary: "Daftar Akun Baru",
+        description: "Mendaftarkan user baru (contributor/upcycler).",
+        tags: ["Auth"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["name", "email", "password", "password_confirmation"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Budi"),
+                    new OA\Property(property: "email", type: "string", example: "budi@example.com"),
+                    new OA\Property(property: "password", type: "string", example: "password123"),
+                    new OA\Property(property: "password_confirmation", type: "string", example: "password123"),
+                    new OA\Property(property: "role", type: "string", example: "contributor"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: "Berhasil Daftar")
+        ]
+    )]
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -51,11 +74,45 @@ class AuthController extends Controller
 
     /**
      * Fitur Login untuk Mendapatkan Token JWT
+     * Mendukung dua cara autentikasi:
+     * 1. JSON body { "email": ..., "password": ... }
+     * 2. Basic Auth header: Authorization: Basic base64(email:password)
      */
+    #[OA\Post(
+        path: "/api/v1/auth/login",
+        summary: "Login JWT / Basic Auth",
+        description: "Mendapatkan JWT token dengan mengirimkan email dan password. Mendukung JSON body maupun Basic Auth.",
+        tags: ["Auth"],
+        security: [
+            ["basicAuth" => []]
+        ],
+        requestBody: new OA\RequestBody(
+            required: false,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "email", type: "string", example: "budi@example.com"),
+                    new OA\Property(property: "password", type: "string", example: "password123"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Berhasil Login (Dapat Token)")
+        ]
+    )]
     public function login(Request $request)
     {
+        // Dukung Basic Auth: ambil kredensial dari Authorization header
+        $authHeader = $request->header('Authorization', '');
+        if (str_starts_with($authHeader, 'Basic ')) {
+            $decoded = base64_decode(substr($authHeader, 6));
+            [$basicEmail, $basicPass] = array_pad(explode(':', $decoded, 2), 2, '');
+            if ($basicEmail && $basicPass) {
+                $request->merge(['email' => $basicEmail, 'password' => $basicPass]);
+            }
+        }
+
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required|string|min:6',
         ]);
 
@@ -75,6 +132,18 @@ class AuthController extends Controller
     /**
      * Fitur Ambil Data Profile User Berdasarkan Token JWT
      */
+    #[OA\Get(
+        path: "/api/v1/auth/me",
+        summary: "Lihat Profil Pengguna",
+        description: "Mendapatkan data user yang sedang login berdasarkan JWT Token.",
+        tags: ["Auth"],
+        security: [
+            ["bearerAuth" => []]
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Data user berhasil diambil")
+        ]
+    )]
     public function profile()
     {
         return response()->json(JWTAuth::user());
@@ -83,6 +152,18 @@ class AuthController extends Controller
     /**
      * Fitur Logout (Menghapus Validitas Token)
      */
+    #[OA\Post(
+        path: "/api/v1/auth/logout",
+        summary: "Logout (Invalidate Token)",
+        description: "Menghancurkan JWT Token yang sedang aktif.",
+        tags: ["Auth"],
+        security: [
+            ["bearerAuth" => []]
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Berhasil Logout")
+        ]
+    )]
     public function logout()
     {
         JWTAuth::invalidate(JWTAuth::getToken());

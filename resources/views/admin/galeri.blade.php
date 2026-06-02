@@ -61,8 +61,12 @@
     @endphp
     <div class="g-card" data-status="{{ $product->status }}" data-type="{{ strtolower($product->category ?? '') }}" data-name="{{ strtolower($product->name ?? $product->title ?? '') }}">
         {{-- Thumbnail --}}
-        <div class="g-thumb" style="background:{{ $bg }};">
+        <div class="g-thumb" style="background:{{ $product->photo ? '#f3f4f6' : $bg }};">
+            @if($product->photo)
+            <img src="{{ asset('storage/'.$product->photo) }}" style="width:100%;height:100%;object-fit:cover;">
+            @else
             <div style="font-size:42px;">{{ $em }}</div>
+            @endif
             <span class="g-badge {{ $product->status === 'published' ? 'gb-pub' : 'gb-pend' }}">
                 {{ $product->status === 'published' ? '✅ Published' : '⏳ Pending' }}
             </span>

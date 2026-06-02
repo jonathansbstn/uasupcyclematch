@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\KoinTransaction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ContributorController extends Controller
 {
@@ -50,22 +51,36 @@ class ContributorController extends Controller
         $data = $request->validate([
             'name'             => 'required|string|max:255',
             'whatsapp'         => 'nullable|string|max:20',
+            'photo'            => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'current_password' => 'nullable|string',
             'new_password'     => 'nullable|string|min:8|confirmed',
+        ], [
+            'photo.image'  => 'File harus berupa gambar.',
+            'photo.max'    => 'Ukuran foto maksimal 2MB.',
         ]);
 
         // Jika ingin ganti password, verifikasi password lama
         if ($request->filled('new_password')) {
             if (!$request->filled('current_password') || !Hash::check($request->current_password, $user->password)) {
-                return back()->withErrors(['current_password' => 'Password saat ini tidak sesuai.'])->withInput();
+                return back()->withErrors(['current_password' => 'Password saat ini tidak sesuai.'])->withInput()->withFragment('profile');
             }
             $user->password = Hash::make($request->new_password);
         }
 
-        $user->name      = $data['name'];
-        $user->whatsapp  = $data['whatsapp'] ?? $user->whatsapp;
+        // Upload foto profil
+        if ($request->hasFile('photo')) {
+            // Hapus foto lama jika ada
+            if ($user->photo) {
+                Storage::disk('public')->delete($user->photo);
+            }
+            $path = $request->file('photo')->store('profiles', 'public');
+            $user->photo = $path;
+        }
+
+        $user->name     = $data['name'];
+        $user->whatsapp = $data['whatsapp'] ?? $user->whatsapp;
         $user->save();
 
-        return back()->with('success', 'Profil berhasil diperbarui!');
+        return back()->with('success', 'Profil berhasil diperbarui!')->withFragment('profile');
     }
 }

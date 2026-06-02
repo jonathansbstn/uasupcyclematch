@@ -1,0 +1,439 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "UpcycleMatch API",
+        "description": "API Documentation untuk UpcycleMatch. Mendukung JWT Bearer Token dan Basic Auth.",
+        "contact": {
+            "email": "admin@upcyclematch.id"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Local Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Daftar Akun Baru",
+                "description": "Mendaftarkan user baru (contributor/upcycler).",
+                "operationId": "fb835c97347e657e2a627790c4c5817a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Budi"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "budi@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "example": "contributor"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil Daftar"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login JWT / Basic Auth",
+                "description": "Mendapatkan JWT token dengan mengirimkan email dan password. Mendukung JSON body maupun Basic Auth.",
+                "operationId": "fb66b153966d9fac2e999136ef0ade67",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "budi@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Berhasil Login (Dapat Token)"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Lihat Profil Pengguna",
+                "description": "Mendapatkan data user yang sedang login berdasarkan JWT Token.",
+                "operationId": "18c385448590270f55bf119473739e40",
+                "responses": {
+                    "200": {
+                        "description": "Data user berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout (Invalidate Token)",
+                "description": "Menghancurkan JWT Token yang sedang aktif.",
+                "operationId": "307ed0512855922b2280792376bb2095",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil Logout"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Daftar Pesanan",
+                "description": "Melihat daftar pesanan. Contributor melihat pesanannya, Upcycler melihat pesanan masuk.",
+                "operationId": "04e0961368d6d76f2eda41b4130cbf0c",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil data pesanan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Buat Pesanan Baru",
+                "description": "Hanya untuk role Contributor. Membuat pesanan baru untuk membeli produk Upcycle.",
+                "operationId": "323b1672f01bdf0c1abc5653ff4ef17e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id",
+                                    "quantity",
+                                    "recipient_name",
+                                    "recipient_phone",
+                                    "address",
+                                    "city",
+                                    "payment_method"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "recipient_name": {
+                                        "type": "string",
+                                        "example": "Andi"
+                                    },
+                                    "recipient_phone": {
+                                        "type": "string",
+                                        "example": "08123456789"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Jl. Sudirman 10"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Jakarta"
+                                    },
+                                    "payment_method": {
+                                        "type": "string",
+                                        "example": "transfer",
+                                        "enum": [
+                                            "koin",
+                                            "transfer"
+                                        ]
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Tolong packing rapi"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pesanan berhasil dibuat"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Detail Pesanan",
+                "description": "Mengambil detail dari satu data pesanan berdasarkan ID.",
+                "operationId": "2af619ca9a78b4fc6c7911cdcb9555e9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID pesanan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil detail pesanan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/analytics": {
+            "get": {
+                "tags": [
+                    "Public"
+                ],
+                "summary": "Dapatkan Statistik Platform",
+                "description": "Mengembalikan data analitik limbah dan produk di UpcycleMatch.",
+                "operationId": "9da0c0a2e81ddec628fd09fb336d8d5f",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/v1/textiles": {
+            "get": {
+                "tags": [
+                    "Textiles"
+                ],
+                "summary": "Daftar Semua Limbah Kain",
+                "description": "Mengambil daftar limbah kain. Endpoint ini bisa diakses secara publik.",
+                "operationId": "3345dea86a6bef2182399540e6d6541a",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Jumlah per halaman",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil data limbah"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Textiles"
+                ],
+                "summary": "Tambah Data Limbah",
+                "description": "Hanya untuk role Contributor. Menambahkan limbah baru ke sistem.",
+                "operationId": "3890475d3dc3c519fd0bbf51b5917d03",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "fabric_type",
+                                    "weight",
+                                    "address"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Kain Perca Katun"
+                                    },
+                                    "fabric_type": {
+                                        "type": "string",
+                                        "example": "Katun"
+                                    },
+                                    "weight": {
+                                        "type": "number",
+                                        "example": 5.5
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Jl. Merdeka No. 10"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Limbah berhasil ditambahkan"
+                    },
+                    "403": {
+                        "description": "Hanya Contributor yang bisa menambah"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/textiles/{id}": {
+            "get": {
+                "tags": [
+                    "Textiles"
+                ],
+                "summary": "Detail Limbah Kain",
+                "description": "Mengambil detail dari satu data limbah kain berdasarkan ID.",
+                "operationId": "5bd8ebdcd415a0a0c60e922ccd6af0c9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID limbah kain",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil detail limbah"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            },
+            "basicAuth": {
+                "type": "http",
+                "scheme": "basic"
+            },
+            "apiKeyAuth": {
+                "type": "apiKey",
+                "name": "X-API-KEY",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Orders",
+            "description": "Orders"
+        },
+        {
+            "name": "Public",
+            "description": "Public"
+        },
+        {
+            "name": "Textiles",
+            "description": "Textiles"
+        }
+    ]
+}

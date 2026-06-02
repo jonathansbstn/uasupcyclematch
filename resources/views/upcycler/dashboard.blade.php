@@ -49,9 +49,13 @@
         <div class="card-b">
             @forelse($claims->whereIn('status',['claimed','processing'])->take(6) as $claim)
             <div class="post-item">
+                @if($claim->image ?? $claim->foto ?? null)
+                <img src="{{ asset('storage/'.($claim->image ?? $claim->foto)) }}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+                @else
                 <div class="pi-icon {{ $claim->fabric_type === 'denim' ? 'pi-b' : 'pi-g' }}">
                     {{ $claim->fabric_type === 'denim' ? '👖' : '🧵' }}
                 </div>
+                @endif
                 <div class="pi-info">
                     <div class="pi-title">{{ $claim->title }}</div>
                     <div class="pi-meta">{{ $claim->created_at->diffForHumans() }} · {{ $claim->weight }} kg · {{ ucfirst($claim->fabric_type ?? '-') }}</div>
@@ -93,9 +97,13 @@
         <div class="card-b">
             @forelse($available->take(5) as $post)
             <div class="post-item">
+                @if($post->image ?? $post->foto ?? null)
+                <img src="{{ asset('storage/'.($post->image ?? $post->foto)) }}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+                @else
                 <div class="pi-icon pi-g">
                     {{ $post->fabric_type === 'denim' ? '👖' : '🧵' }}
                 </div>
+                @endif
                 <div class="pi-info">
                     <div class="pi-title">{{ $post->title }}</div>
                     <div class="pi-meta">{{ $post->weight }} kg · {{ $post->address ?? 'Lihat di peta' }}</div>

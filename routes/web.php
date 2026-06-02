@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\LimbahKain;
+use App\Models\Product;
 use App\Models\Textile;
 use App\Models\User;
 use App\Http\Controllers\ContributorController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\AdminVerificationController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UpcyclerOrderController;
+use App\Http\Controllers\KoinWithdrawalController;
 use Laravel\Socialite\Facades\Socialite;
 
 /*
@@ -26,7 +28,26 @@ use Laravel\Socialite\Facades\Socialite;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    return view('landing');
+    // Ambil produk published terbaru untuk gallery (max 6)
+    $galleryProducts = Product::where('status', 'published')
+        ->with(['upcycler:id,name', 'textile:id,weight,fabric_type'])
+        ->latest()
+        ->take(6)
+        ->get();
+
+    // Statistik nyata dari database
+    $totalWeight    = (float) Textile::sum('weight');
+    $totalContribs  = User::where('role', 'contributor')->count();
+    $totalUpcyclers = User::where('role', 'upcycler')->count();
+    $totalProducts  = Product::where('status', 'published')->count();
+
+    return view('landing', compact(
+        'galleryProducts',
+        'totalWeight',
+        'totalContribs',
+        'totalUpcyclers',
+        'totalProducts'
+    ));
 })->name('landing');
 
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
@@ -91,6 +112,9 @@ Route::middleware(['auth', 'role:contributor'])->prefix('contributor')->group(fu
     Route::get('/checkout/{product}', [OrderController::class, 'checkout'])->name('contributor.checkout');
     Route::post('/checkout/{product}', [OrderController::class, 'store'])->name('contributor.checkout.store');
     Route::get('/orders', [OrderController::class, 'myOrders'])->name('contributor.orders');
+
+    // Koin Withdrawal (Pencairan)
+    Route::post('/wallet/withdraw', [KoinWithdrawalController::class, 'store'])->name('contributor.wallet.withdraw');
 });
 
 /*
@@ -110,7 +134,15 @@ Route::middleware('auth')->group(function () {
 | 4. AREA DASHBOARD UPCYCLER (MITRA PENJAHIT)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:upcycler'])->prefix('upcycler')->group(function () {
+// Upcycler waiting verification (accessible without being verified)
+Route::middleware(['auth', 'role:upcycler'])->get('/upcycler/waiting-verification', function () {
+    if (auth()->user()->is_verified) {
+        return redirect()->route('upcycler.dashboard');
+    }
+    return view('upcycler.waiting-verification');
+})->name('upcycler.waiting-verification');
+
+Route::middleware(['auth', 'role:upcycler', \App\Http\Middleware\CheckUpcyclerVerified::class])->prefix('upcycler')->group(function () {
 
     // Dashboard utama upcycler
     Route::get('/dashboard', function () {
@@ -164,10 +196,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
             'total_kg'        => (float) Textile::whereIn('status', ['claimed','processing','completed'])->sum('weight'),
             'modal_hemat'     => (float) Textile::whereIn('status', ['claimed','processing','completed'])->sum('weight') * 50000,
             'total_users'     => User::count(),
-            'pending_penjahit'=> User::where('role', 'upcycler')->where('is_verified', false)->count(),
+            'pending_penjahit'=> User::where('role', 'upcycler')->where('is_verified', false)->whereDoesntHave('upcyclerProfile', fn($q) => $q->where('verification_status','rejected'))->count(),
         ];
         $recentPosts    = Textile::with('owner')->latest()->take(10)->get();
-        $pendingPenjahit = User::where('role', 'upcycler')->where('is_verified', false)->latest()->take(5)->get();
+        $pendingPenjahit = User::where('role', 'upcycler')->where('is_verified', false)->whereDoesntHave('upcyclerProfile', fn($q) => $q->where('verification_status','rejected'))->latest()->take(5)->get();
         return view('admin.dashboard', compact('stats', 'recentPosts', 'pendingPenjahit'));
     })->name('admin.dashboard');
 
@@ -228,6 +260,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/export', function () {
         return redirect()->route('admin.report');
     })->name('admin.export');
+
+    // Pencairan Koin
+    Route::get('/withdrawals', [KoinWithdrawalController::class, 'adminIndex'])->name('admin.withdrawals');
+    Route::patch('/withdrawals/{withdrawal}/approve', [KoinWithdrawalController::class, 'approve'])->name('admin.withdrawals.approve');
+    Route::patch('/withdrawals/{withdrawal}/reject', [KoinWithdrawalController::class, 'reject'])->name('admin.withdrawals.reject');
 });
 
 /*

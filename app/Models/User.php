@@ -6,14 +6,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    /** JWT: Identifier field untuk payload sub */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /** JWT: Custom claims tambahan */
+    public function getJWTCustomClaims(): array
+    {
+        return [
+            'role'  => $this->role,
+            'name'  => $this->name,
+            'email' => $this->email,
+        ];
+    }
+
     protected $fillable = [
         'name', 'email', 'whatsapp', 'password', 'role', 'koin', 'saldo', 'is_verified',
-        'bank_name', 'bank_account', 'bank_holder',
+        'bank_name', 'bank_account', 'bank_holder', 'photo',
     ];
 
     protected $hidden = [

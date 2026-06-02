@@ -1,0 +1,382 @@
+{
+  "info": {
+    "_postman_id": "upcyclematch-api-v1",
+    "name": "UpcycleMatch API v1",
+    "description": "Dokumentasi lengkap API UpcycleMatch.\n\n**Autentikasi yang didukung:**\n1. **JWT Bearer Token** → Dari endpoint /auth/login, masukkan ke header `Authorization: Bearer <token>`\n2. **Basic Auth** → `Authorization: Basic base64(email:password)` pada endpoint /auth/login\n3. **API Key** → Header `X-API-KEY: upcyclematch-dev-key-2026` untuk endpoint publik eksternal\n\n**Base URL:** `http://localhost:8000/api/v1`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api/v1", "type": "string" },
+    { "key": "jwt_token", "value": "", "type": "string", "description": "Diisi otomatis setelah login" },
+    { "key": "api_key", "value": "upcyclematch-dev-key-2026", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🔑 Autentikasi (JWT)",
+      "item": [
+        {
+          "name": "Register - Daftar Akun Baru",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"email\": \"budi@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"role\": \"contributor\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth","register"] },
+            "description": "Mendaftarkan akun baru. Role bisa: `contributor` atau `upcycler`.\n\nResponse berisi JWT token yang langsung bisa digunakan."
+          }
+        },
+        {
+          "name": "Login - Dapat JWT Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.access_token) {",
+                  "  pm.collectionVariables.set('jwt_token', json.access_token);",
+                  "  console.log('JWT Token tersimpan:', json.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"budi@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] },
+            "description": "Login dengan email dan password.\n\n**Mendukung dua cara:**\n1. JSON body (seperti ini)\n2. Basic Auth header: `Authorization: Basic base64(email:password)`\n\nToken JWT otomatis tersimpan ke variabel `jwt_token` via Test script."
+          }
+        },
+        {
+          "name": "Login - Basic Auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Basic YnVkaUBleGFtcGxlLmNvbTpwYXNzd29yZDEyMw==", "description": "base64(budi@example.com:password123)" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "budi@example.com" },
+                { "key": "password", "value": "password123" }
+              ]
+            },
+            "description": "Login menggunakan **HTTP Basic Authentication**.\n\nPostman akan otomatis encode ke format Base64.\nHeader yang dikirim: `Authorization: Basic <base64(email:password)>`"
+          }
+        },
+        {
+          "name": "Profile - Data User Login",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth","me"] },
+            "description": "Mendapatkan data profil user yang sedang login berdasarkan JWT token."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth","logout"] },
+            "description": "Logout — token JWT akan diinvalidasi dan masuk blacklist."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔗 API Key (Publik Eksternal)",
+      "item": [
+        {
+          "name": "Waste Map - Peta Limbah (API Key)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-API-KEY", "value": "{{api_key}}", "description": "API Key untuk akses eksternal" }
+            ],
+            "url": { "raw": "{{base_url}}/public/waste-map", "host": ["{{base_url}}"], "path": ["public","waste-map"] },
+            "description": "Mendapatkan data peta limbah dalam format GeoJSON.\n\n**Auth:** Header `X-API-KEY: upcyclematch-dev-key-2026`\n\nCocok untuk integrasi eksternal seperti Leaflet.js, GIS, atau dashboard pihak ketiga."
+          }
+        },
+        {
+          "name": "Stats - Statistik Platform (API Key)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": { "raw": "{{base_url}}/public/stats", "host": ["{{base_url}}"], "path": ["public","stats"] },
+            "description": "Statistik ringkas platform UpcycleMatch untuk integrasi eksternal.\n\n**Auth:** Header `X-API-KEY`"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧵 Limbah Kain (Textiles)",
+      "item": [
+        {
+          "name": "List Limbah (Publik)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/textiles?status=available&per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["textiles"],
+              "query": [
+                { "key": "status", "value": "available", "description": "Filter: available|claimed|processing|completed" },
+                { "key": "fabric_type", "value": "", "description": "Filter jenis kain (opsional)" },
+                { "key": "per_page", "value": "10", "description": "Jumlah per halaman (default 15)" }
+              ]
+            },
+            "description": "Daftar limbah kain yang tersedia. **Endpoint publik, tidak perlu auth.**"
+          }
+        },
+        {
+          "name": "Detail Limbah (Publik)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/textiles/1", "host": ["{{base_url}}"], "path": ["textiles","1"] },
+            "description": "Detail satu limbah berdasarkan ID. **Publik, tidak perlu auth.**"
+          }
+        },
+        {
+          "name": "Tambah Limbah (JWT - Contributor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "Kain Batik Bekas Pabrik", "type": "text" },
+                { "key": "fabric_type", "value": "Batik Katun", "type": "text" },
+                { "key": "description", "value": "Sisa kain batik masih layak, sekitar 50 lembar", "type": "text" },
+                { "key": "weight", "value": "5.5", "type": "text" },
+                { "key": "address", "value": "Jl. Pahlawan No. 10, Bandung", "type": "text" },
+                { "key": "latitude", "value": "-6.917464", "type": "text" },
+                { "key": "longitude", "value": "107.619123", "type": "text" },
+                { "key": "image", "src": [], "type": "file", "description": "Opsional: foto limbah (max 5MB)" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/textiles", "host": ["{{base_url}}"], "path": ["textiles"] },
+            "description": "Kontributor menambahkan data limbah baru.\n\n**Auth:** Bearer JWT Token\n**Role:** contributor"
+          }
+        },
+        {
+          "name": "Update Limbah (JWT - Contributor)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Kain Batik Bekas - Update\",\n  \"weight\": 6.0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/textiles/1", "host": ["{{base_url}}"], "path": ["textiles","1"] },
+            "description": "Update data limbah milik contributor yang login.\n\n**Auth:** Bearer JWT Token\n**Catatan:** Hanya bisa update limbah milik sendiri."
+          }
+        },
+        {
+          "name": "Hapus Limbah (JWT - Contributor)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/textiles/1", "host": ["{{base_url}}"], "path": ["textiles","1"] },
+            "description": "Hapus limbah milik contributor. Hanya bisa dihapus jika status masih `available`."
+          }
+        },
+        {
+          "name": "Klaim Limbah (JWT - Upcycler)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/textiles/1/claim", "host": ["{{base_url}}"], "path": ["textiles","1","claim"] },
+            "description": "Upcycler mengklaim limbah untuk diproses.\n\n**Auth:** Bearer JWT Token\n**Role:** upcycler (harus terverifikasi admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Pesanan (Orders)",
+      "item": [
+        {
+          "name": "List Pesanan Saya (JWT)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/orders", "host": ["{{base_url}}"], "path": ["orders"] },
+            "description": "Daftar pesanan berdasarkan role:\n- **Contributor:** pesanan yang dibuat sendiri\n- **Upcycler:** pesanan masuk untuk produk mereka\n- **Admin:** semua pesanan (dengan pagination)"
+          }
+        },
+        {
+          "name": "Detail Pesanan (JWT)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/orders/1", "host": ["{{base_url}}"], "path": ["orders","1"] },
+            "description": "Detail satu pesanan. Hanya bisa dilihat oleh buyer, upcycler pemilik produk, atau admin."
+          }
+        },
+        {
+          "name": "Buat Pesanan (JWT - Contributor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 1,\n  \"recipient_name\": \"Budi Santoso\",\n  \"recipient_phone\": \"08123456789\",\n  \"address\": \"Jl. Merdeka No. 5\",\n  \"city\": \"Bandung\",\n  \"payment_method\": \"transfer\",\n  \"notes\": \"Tolong dibungkus rapi ya\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/orders", "host": ["{{base_url}}"], "path": ["orders"] },
+            "description": "Contributor membuat pesanan produk upcycle.\n\n**payment_method:** `koin` atau `transfer`\n\nJika koin, saldo koin akan langsung dipotong dan status menjadi `paid`."
+          }
+        },
+        {
+          "name": "Update Status Pesanan (JWT - Upcycler)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"processing\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/orders/1/status", "host": ["{{base_url}}"], "path": ["orders","1","status"] },
+            "description": "Upcycler mengupdate status pesanan.\n\n**Status yang tersedia:** `processing`, `shipped`, `done`, `cancelled`"
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Produksi (Upcycler)",
+      "item": [
+        {
+          "name": "Mulai Produksi (JWT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"textile_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/production/start", "host": ["{{base_url}}"], "path": ["production","start"] },
+            "description": "Upcycler memulai proses produksi untuk limbah yang diklaim."
+          }
+        },
+        {
+          "name": "Selesai Produksi (JWT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"textile_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/production/finish", "host": ["{{base_url}}"], "path": ["production","finish"] },
+            "description": "Upcycler menyelesaikan produksi. Status textile berubah ke `completed`."
+          }
+        },
+        {
+          "name": "Upload Produk Hasil (JWT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "textile_id", "value": "1", "type": "text" },
+                { "key": "product_name", "value": "Tas Batik Daur Ulang", "type": "text" },
+                { "key": "description", "value": "Tas dari limbah batik, handmade", "type": "text" },
+                { "key": "price", "value": "150000", "type": "text" },
+                { "key": "photo", "src": [], "type": "file", "description": "Foto produk (wajib, max 5MB)" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/production/upload", "host": ["{{base_url}}"], "path": ["production","upload"] },
+            "description": "Upload foto dan data produk hasil upcycling. Produk akan menunggu review admin sebelum dipublikasikan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Analytics (Publik)",
+      "item": [
+        {
+          "name": "Analytics Platform",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/analytics", "host": ["{{base_url}}"], "path": ["analytics"] },
+            "description": "Statistik platform: total limbah, produk, upcycler, penghematan material. **Publik, tidak perlu auth.**"
+          }
+        }
+      ]
+    }
+  ]
+}

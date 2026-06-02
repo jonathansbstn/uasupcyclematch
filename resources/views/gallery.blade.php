@@ -171,9 +171,7 @@
   @endif
 </div>
 
-<div class="gallery-footer">
-  &copy; {{ date('Y') }} UpcycleMatch — Bersama kurangi sampah tekstil Indonesia 🌿
-</div>
+@include('partials.footer')
 
 </body>
 </html>

@@ -184,6 +184,14 @@
         <div class="alert-done">
             <strong>🎉 Pesanan Selesai!</strong> Produk telah diterima. Terima kasih sudah mendukung upcycling!
         </div>
+
+        @elseif($order->status === 'cancelled')
+        <div class="alert-pay" style="background:#fee2e2;border-color:#fca5a5;color:#991b1b;">
+            <strong>❌ Pesanan Dibatalkan!</strong> Pesanan ini telah dibatalkan oleh penjual.
+            @if($waPhone)
+            <br><a href="https://wa.me/{{ $waPhone }}" target="_blank" style="color:#991b1b;font-weight:700;">💬 Hubungi Penjual</a>
+            @endif
+        </div>
         @endif
     </div>
 </div>
